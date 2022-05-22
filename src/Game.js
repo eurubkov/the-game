@@ -1,3 +1,5 @@
+import { INVALID_MOVE } from 'boardgame.io/core';
+
 const DECK_SIZE = 98;
 const HAND_SIZE = 7;
 
@@ -13,8 +15,11 @@ const Replenish = (G, ctx) => {
 }
 
 const PlayCard = (G, ctx, card) => {
-    console.log(card);
-    G.hands[ctx.currentPlayer] = G.hands[ctx.currentPlayer].splice(card, 1);
+    const cardIndex = G.hands[ctx.currentPlayer].indexOf(card);
+    if (cardIndex < 0) {
+        return INVALID_MOVE;
+    }
+    G.hands[ctx.currentPlayer].splice(cardIndex, 1);
 }
 
 

@@ -45,6 +45,7 @@ export const TheGame = {
             next: "playCard"
         },
         playCard: {
+            endIf: (G, ctx) => (G.deck.length === 0),
             moves: {
                 PlayCard
             },
@@ -53,6 +54,15 @@ export const TheGame = {
                 onEnd: (G, ctx) => {
                     Replenish(G, ctx)
                 }
+            },
+            next: "playCardEmptyDeck"
+        },
+        playCardEmptyDeck: {
+            moves: {
+                PlayCard
+            },
+            turn: {
+                minMoves: 1, maxMoves: 7
             }
         }
     }

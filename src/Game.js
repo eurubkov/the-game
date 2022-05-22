@@ -59,6 +59,16 @@ const CanPlayCard = (G, ctx, card, pile) => {
     }
 }
 
+const HasValidMoves = (G, ctx) => {
+    const piles = Object.keys(PILES_MAP);
+    for (const pile of piles) {
+        if (G.hands[ctx.currentPlayer].some(card => CanPlayCard(G, ctx, card, pile))) {
+            return true;
+        }
+    }
+    return false;
+
+}
 
 
 export const TheGame = {
@@ -67,6 +77,18 @@ export const TheGame = {
         hands: Array(2).fill([]),
         piles: [1, 1, 100, 100]
     }),
+
+    endIf: (G, ctx) => {
+        if (G.deck.length === 0 && G.hands.every(x => x.length === 0)) {
+            return { won: true }
+        }
+
+        if (!HasValidMoves(G, ctx)) {
+            return { won: false }
+        }
+
+
+    },
 
     phases: {
         draw: {

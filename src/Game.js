@@ -31,7 +31,7 @@ const Replenish = (G, ctx) => {
 }
 
 const PlayCard = (G, ctx, card, pile) => {
-    const cardIndex = G.hands[ctx.currentPlayer].indexOf(card);
+    const cardIndex = G.hands[ctx.currentPlayer].indexOf(+card);
     if (cardIndex < 0 || !CanPlayCard(G, ctx, card, pile)) {
         return INVALID_MOVE;
     }
@@ -40,8 +40,6 @@ const PlayCard = (G, ctx, card, pile) => {
 }
 
 const CanPlayCard = (G, ctx, card, pile) => {
-    console.log(card)
-    console.log(pile)
     if (UP_PILES.includes(pile)) {
         const pileIndex = PILES_MAP[pile];
         if (card > G.piles[pileIndex] || G.piles[pileIndex] - card === 10) {
@@ -75,8 +73,25 @@ export const TheGame = {
     setup: (ctx) => ({
         deck: ctx.random.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)),
         hands: Array(2).fill([]),
-        piles: [1, 1, 100, 100]
+        piles: [1, 1, 100, 100],
+        test: "abc"
     }),
+
+    ai: {
+        enumerate: (G, ctx) => {
+            let moves = [];
+            for (let card of G.hands[ctx.currentPlayer]) {
+                for (let pile of Object.keys(PILES_MAP)) {
+                    if (CanPlayCard(G, ctx, card, pile)) {
+                        moves.push({
+                            move: "PlayCard", args: [card, pile]
+                        })
+                    }
+                }
+            }
+            return moves;
+        }
+    },
 
     endIf: (G, ctx) => {
         if (G.deck.length === 0 && G.hands.every(x => x.length === 0)) {

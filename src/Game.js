@@ -62,7 +62,7 @@ const CanPlayCard = (G, ctx, card, pile) => {
 const HasValidMoves = (G, ctx) => {
     const piles = Object.keys(PILES_MAP);
     for (const pile of piles) {
-        if (G.hands[ctx.currentPlayer].some(card => CanPlayCard(G, ctx, card, pile))) {
+        if (G.hands[ctx.currentPlayer].length === 0 || G.hands[ctx.currentPlayer].some(card => CanPlayCard(G, ctx, card, pile))) {
             return true;
         }
     }
@@ -95,7 +95,7 @@ export const TheGame = {
             start: true,
             endIf: (G, ctx) => (G.deck.length <= DECK_SIZE - ctx.numPlayers * HAND_SIZE),
             onBegin: (G, ctx) => {
-                while (G.deck.length > DECK_SIZE - ctx.playOrder.length * HAND_SIZE) {
+                while (G.deck.length > DECK_SIZE - ctx.numPlayers * HAND_SIZE) {
                     for (let i = 0; i < ctx.numPlayers; i++) {
                         const card = G.deck.pop();
                         G.hands[ctx.playOrder[i]].push(card);

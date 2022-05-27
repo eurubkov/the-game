@@ -22,25 +22,12 @@ const INDEX_TO_PILE_MAP = {
 
 
 const TheGameBoard = ({ ctx, G, moves }) => {
-    const [playerHand, setPlayerHand] = useState(G.hands[ctx.currentPlayer]);
-    const [piles, setPiles] = useState(G.piles);
-
-    const onDragDrop = (card, pile) => moves.PlayCard(card, pile);
-    const dragCard = (e) => {
-        e.dataTransfer.setData("card", e.target.innerHTML);
-    }
-    const dropCard = (e) => {
+    const onDragDrop = (e) => {
         e.preventDefault();
-        const card = e.dataTransfer.getData("card");
-        const pileIndex = e.target.id;
-        onDragDrop(card, INDEX_TO_PILE_MAP[pileIndex]);
-        const handIdx = playerHand.indexOf(+card);
-        const handCopy = [...playerHand];
-        handCopy.splice(handIdx, 1);
-        setPlayerHand(handCopy);
-        const pilesCopy = [...piles];
-        pilesCopy[pileIndex] = parseInt(card);
-        setPiles(pilesCopy);
+        moves.PlayCard(e.dataTransfer.getData("card"), INDEX_TO_PILE_MAP[e.target.id]);
+    }
+    const onDragCard = (e) => {
+        e.dataTransfer.setData("card", e.target.innerHTML);
     }
     const allowDropCard = (e) => {
         e.preventDefault();
@@ -56,13 +43,13 @@ const TheGameBoard = ({ ctx, G, moves }) => {
     }
 
     let pilesElements = [];
-    for (let i = 0; i < piles.length; i++) {
-        pilesElements.push((<div id={i} onDrop={dropCard} onDragOver={allowDropCard} key={i} style={pileStyle}>{piles[i]}</div>));
+    for (let i = 0; i < G.piles.length; i++) {
+        pilesElements.push((<div id={i} onDrop={(e) => onDragDrop(e)} onDragOver={allowDropCard} key={i} style={pileStyle}>{G.piles[i]}</div>));
     }
 
     let hand = [];
-    for (let i = 0; i < playerHand.length; i++) {
-        hand.push((<div onDragStart={dragCard} draggable="true" key={i} style={pileStyle}>{playerHand[i]}</div>))
+    for (let i = 0; i < G.hands[ctx.currentPlayer].length; i++) {
+        hand.push((<div onDragStart={onDragCard} draggable="true" key={i} style={pileStyle}>{G.hands[ctx.currentPlayer][i]}</div>))
     }
     return (<div>
         <h3>Piles</h3>

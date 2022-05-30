@@ -39,7 +39,7 @@ const PlayCard = (G, ctx, card, pile) => {
     G.piles[PILES_MAP[pile]] = card;
 }
 
-const CanPlayCard = (G, ctx, card, pile) => {
+export const CanPlayCard = (G, ctx, card, pile) => {
     if (UP_PILES.includes(pile)) {
         const pileIndex = PILES_MAP[pile];
         if (card > G.piles[pileIndex] || G.piles[pileIndex] - card === 10) {

@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useReducer } from "react";
+import React from "react";
+import { CanPlayCard } from "./Game.js";
 
 const pilesStyle = {
     justifyContent: "flex-start",
@@ -23,8 +24,14 @@ const INDEX_TO_PILE_MAP = {
 
 const TheGameBoard = ({ ctx, G, moves }) => {
     const onDragDrop = (e) => {
+        const card = e.dataTransfer.getData("card");
+        const pile = INDEX_TO_PILE_MAP[e.target.id];
         e.preventDefault();
-        moves.PlayCard(e.dataTransfer.getData("card"), INDEX_TO_PILE_MAP[e.target.id]);
+        if (CanPlayCard(G, ctx, card, pile) === false) {
+            alert("Invalid move!");
+        } else {
+            moves.PlayCard(e.dataTransfer.getData("card"), INDEX_TO_PILE_MAP[e.target.id]);
+        }
     }
     const onDragCard = (e) => {
         e.dataTransfer.setData("card", e.target.innerHTML);

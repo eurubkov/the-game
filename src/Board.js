@@ -22,7 +22,10 @@ const INDEX_TO_PILE_MAP = {
 
 
 
-const TheGameBoard = ({ ctx, G, moves, playerID }) => {
+const TheGameBoard = ({ ctx, G, moves, events, playerID }) => {
+    const onEndTurn = () => {
+        events.endTurn();
+    }
     const onDragDrop = (e) => {
         const card = e.dataTransfer.getData("card");
         const pile = INDEX_TO_PILE_MAP[e.target.id];
@@ -55,14 +58,15 @@ const TheGameBoard = ({ ctx, G, moves, playerID }) => {
     }
 
     let hand = [];
-    for (let i = 0; i < G.hands[playerID].length; i++) {
-        hand.push((<div onDragStart={onDragCard} draggable="true" key={i} style={pileStyle}>{G.hands[playerID][i]}</div>))
+    for (let i = 0; i < G.players[playerID].hand.length; i++) {
+        hand.push((<div onDragStart={onDragCard} draggable="true" key={i} style={pileStyle}>{G.players[playerID].hand[i]}</div>))
     }
     return (<div>
         <h3>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
         <h3>Hand</h3>
         <div style={pilesStyle}>{hand}</div>
+        <button onClick={onEndTurn}>End Turn</button>
     </div>)
 };
 

@@ -20,8 +20,13 @@ const PILES_MAP = {
 
 
 const DrawCard = (G, ctx) => {
+    DrawCardForPlayer(G, ctx, ctx.currentPlayer);
+}
+
+const DrawCardForPlayer = (G, ctx, playerID) => {
+    G.deck = ctx.random.Shuffle(G.deck);
     const card = G.deck.pop();
-    G.players[ctx.currentPlayer].hand.push(card);
+    G.players[playerID].hand.push(card);
 }
 
 const Replenish = (G, ctx) => {
@@ -36,7 +41,7 @@ const PlayCard = (G, ctx, card, pile) => {
         return INVALID_MOVE;
     }
     G.players[ctx.currentPlayer].hand.splice(cardIndex, 1);
-    G.piles[PILES_MAP[pile]] = card;
+    G.piles[PILES_MAP[pile]] = parseInt(card);
 }
 
 export const CanPlayCard = (G, ctx, card, pile) => {
@@ -119,8 +124,7 @@ export const TheGame = {
             onBegin: (G, ctx) => {
                 while (G.deck.length > DECK_SIZE - ctx.numPlayers * HAND_SIZE) {
                     for (let i = 0; i < ctx.numPlayers; i++) {
-                        const card = G.deck.pop();
-                        G.players[ctx.playOrder[i]].hand.push(card);
+                        DrawCardForPlayer(G, ctx, ctx.playOrder[i]);
                     }
                 }
             },

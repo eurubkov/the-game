@@ -45,6 +45,8 @@ const PlayCard = (G, ctx, card, pile) => {
 }
 
 export const CanPlayCard = (G, ctx, card, pile) => {
+    console.log(card)
+    console.log(pile)
     if (UP_PILES.includes(pile)) {
         const pileIndex = PILES_MAP[pile];
         if (card > G.piles[pileIndex] || G.piles[pileIndex] - card === 10) {
@@ -118,7 +120,7 @@ export const TheGame = {
     },
 
     endIf: (G, ctx) => {
-        if (G.deck.length === 0 && Object.keys(G.players).every(x => x.hand.length === 0)) {
+        if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
             return { won: true }
         }
 

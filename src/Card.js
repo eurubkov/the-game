@@ -12,9 +12,9 @@ const cardStyle = {
     color: "white",
     margin: "5px"
 }
-const Card = ({ value, ...props }) => {
+const Card = ({ value, id, ...props }) => {
     return (
-        <div {...props} style={cardStyle}><h1>{value}</h1></div>
+        <div id={id} {...props} style={cardStyle}><h1 id={id}>{value}</h1></div>
     )
 }
 export default Card;

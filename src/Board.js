@@ -22,14 +22,16 @@ const INDEX_TO_PILE_MAP = {
 
 
 
-const TheGameBoard = ({ ctx, G, moves, events, playerID }) => {
+const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
+    const clientPlayerName = props.matchData[ctx.currentPlayer].name;
+    const currentPlayerName = props.matchData[playerID].name;
     const onEndTurn = () => {
         events.endTurn();
     }
     const onDragDrop = (e) => {
+        e.preventDefault();
         const card = e.dataTransfer.getData("card");
         const pile = INDEX_TO_PILE_MAP[e.target.id];
-        e.preventDefault();
         if (CanPlayCard(G, ctx, card, pile) === false) {
             alert("Invalid move!");
         } else {
@@ -56,17 +58,18 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID }) => {
     for (let i = 0; i < G.piles.length; i++) {
         pilesElements.push((<div id={i} onDrop={(e) => onDragDrop(e)} onDragOver={allowDropCard} key={i} style={pileStyle}>{G.piles[i]}</div>));
     }
-
+    const isDraggable = ctx.currentPlayer === playerID;
     let hand = [];
     for (let i = 0; i < G.players[playerID].hand.length; i++) {
-        hand.push((<div onDragStart={onDragCard} draggable="true" key={i} style={pileStyle}>{G.players[playerID].hand[i]}</div>))
+        hand.push((<div onDragStart={onDragCard} draggable={isDraggable} key={i} style={pileStyle}>{G.players[playerID].hand[i]}</div>))
     }
     return (<div>
+        <h2>{currentPlayerName}'s Turn</h2>
         <h3>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
-        <h3>Hand</h3>
+        <h3>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
-        <button onClick={onEndTurn}>End Turn</button>
+        <button disabled={!isDraggable} onClick={onEndTurn}>End Turn</button>
     </div>)
 };
 

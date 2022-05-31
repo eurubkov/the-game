@@ -1,7 +1,7 @@
 import { INVALID_MOVE, PlayerView } from 'boardgame.io/core';
 
 const DECK_SIZE = 98;
-const HAND_SIZE = 7;
+const GET_HAND_SIZE = (G, ctx) => ctx.numPlayers === 2 ? 7 : 6;
 
 const FIRST_UP = "first_up";
 const SECOND_UP = "second_up";
@@ -30,7 +30,7 @@ const DrawCardForPlayer = (G, ctx, playerID) => {
 }
 
 const Replenish = (G, ctx) => {
-    while (G.deck.length > 0 && G.players[ctx.currentPlayer].hand.length < HAND_SIZE) {
+    while (G.deck.length > 0 && G.players[ctx.currentPlayer].hand.length < GET_HAND_SIZE(G, ctx)) {
         DrawCard(G, ctx);
     }
 }
@@ -132,9 +132,9 @@ export const TheGame = {
     phases: {
         draw: {
             start: true,
-            endIf: (G, ctx) => (G.deck.length <= DECK_SIZE - ctx.numPlayers * HAND_SIZE),
+            endIf: (G, ctx) => (G.deck.length <= DECK_SIZE - ctx.numPlayers * GET_HAND_SIZE(G, ctx)),
             onBegin: (G, ctx) => {
-                while (G.deck.length > DECK_SIZE - ctx.numPlayers * HAND_SIZE) {
+                while (G.deck.length > DECK_SIZE - ctx.numPlayers * GET_HAND_SIZE(G, ctx)) {
                     for (let i = 0; i < ctx.numPlayers; i++) {
                         DrawCardForPlayer(G, ctx, ctx.playOrder[i]);
                     }

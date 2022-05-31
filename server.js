@@ -1,5 +1,5 @@
 const { Server, Origins } = require("boardgame.io/server");
-const { TheGame } = require("./Game");
+const { TheGame } = require("./src/Game");
 
 const server = Server({
     games: [TheGame],

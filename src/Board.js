@@ -12,6 +12,9 @@ const pileStyle = {
     lineHeight: '50px',
     textAlign: 'center',
 };
+const directionStyle = {
+    textAlign: "center"
+};
 
 const INDEX_TO_PILE_MAP = {
     0: "first_up",
@@ -23,7 +26,6 @@ const INDEX_TO_PILE_MAP = {
 
 
 const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
-    const clientPlayerName = props.matchData[ctx.currentPlayer].name;
     const currentPlayerName = props.matchData[playerID].name;
     const onEndTurn = () => {
         events.endTurn();
@@ -56,7 +58,10 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
 
     let pilesElements = [];
     for (let i = 0; i < G.piles.length; i++) {
-        pilesElements.push((<div id={i} onDrop={(e) => onDragDrop(e)} onDragOver={allowDropCard} key={i} style={pileStyle}>{G.piles[i]}</div>));
+        let direction = i < 2 ? "UP" : "DOWN";
+        pilesElements.push(
+            (<div key={i} style={directionStyle}>{direction}<div id={i} onDrop={(e) => onDragDrop(e)} onDragOver={allowDropCard} key={i} style={pileStyle}>{G.piles[i]}</div></div>)
+        );
     }
     const isDraggable = ctx.currentPlayer === playerID;
     let hand = [];

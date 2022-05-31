@@ -86,6 +86,18 @@ export const TheGame = {
             },
             "1": {
                 hand: []
+            },
+            "2": {
+                hand: []
+            },
+            "3": {
+                hand: []
+            },
+            "4": {
+                hand: []
+            },
+            "5": {
+                hand: []
             }
         }
     }),

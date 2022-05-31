@@ -75,6 +75,7 @@ const HasValidMoves = (G, ctx) => {
 
 
 export const TheGame = {
+    name: "TheGame",
     playerView: PlayerView.STRIP_SECRETS,
     setup: (ctx) => ({
         deck: ctx.random.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)),

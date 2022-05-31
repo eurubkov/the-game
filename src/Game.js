@@ -27,6 +27,7 @@ const DrawCardForPlayer = (G, ctx, playerID) => {
     G.deck = ctx.random.Shuffle(G.deck);
     const card = G.deck.pop();
     G.players[playerID].hand.push(card);
+    G.players[playerID].hand.sort((a, b) => a - b);
 }
 
 const Replenish = (G, ctx) => {

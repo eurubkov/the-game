@@ -45,8 +45,6 @@ const PlayCard = (G, ctx, card, pile) => {
 }
 
 export const CanPlayCard = (G, ctx, card, pile) => {
-    console.log(card)
-    console.log(pile)
     if (UP_PILES.includes(pile)) {
         const pileIndex = PILES_MAP[pile];
         if (card > G.piles[pileIndex] || G.piles[pileIndex] - card === 10) {

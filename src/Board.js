@@ -1,8 +1,9 @@
 import React from "react";
 import { CanPlayCard } from "./Game.js";
+import Card from "./Card.js";
 
 const pilesStyle = {
-    justifyContent: "flex-start",
+    justifyContent: "center",
     display: "flex",
 }
 const pileStyle = {
@@ -10,7 +11,7 @@ const pileStyle = {
     width: '50px',
     height: '50px',
     lineHeight: '50px',
-    textAlign: 'center',
+    textAlign: 'center'
 };
 const directionStyle = {
     textAlign: "center"
@@ -60,19 +61,19 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
     for (let i = 0; i < G.piles.length; i++) {
         let direction = i < 2 ? "UP" : "DOWN";
         pilesElements.push(
-            (<div key={i} style={directionStyle}>{direction}<div id={i} onDrop={(e) => onDragDrop(e)} onDragOver={allowDropCard} key={i} style={pileStyle}>{G.piles[i]}</div></div>)
+            (<div key={i} style={directionStyle}>{direction}<Card value={G.piles[i]} id={i} onDrop={(e) => onDragDrop(e)} onDragOver={allowDropCard} key={i} style={pileStyle} /></div>)
         );
     }
     const isDraggable = ctx.currentPlayer === playerID;
     let hand = [];
     for (let i = 0; i < G.players[playerID].hand.length; i++) {
-        hand.push((<div onDragStart={onDragCard} draggable={isDraggable} key={i} style={pileStyle}>{G.players[playerID].hand[i]}</div>))
+        hand.push((<Card value={G.players[playerID].hand[i]} onDragStart={onDragCard} draggable={isDraggable} key={i} style={pileStyle} />))
     }
     return (<div>
         <h2>{currentPlayerName}'s Turn</h2>
-        <h3>Piles</h3>
+        <h3 style={{ textAlign: "center" }}>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
-        <h3>Your Hand</h3>
+        <h3 style={{ textAlign: "center" }}>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
         <button disabled={!isDraggable} onClick={onEndTurn}>End Turn</button>
     </div>)

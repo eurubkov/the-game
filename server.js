@@ -2,7 +2,7 @@ const { Server, Origins } = require("boardgame.io/server");
 const { TheGame } = require("./src/Game");
 
 const server = Server({
-    games: [TheGame],
-    origins: [Origins.LOCALHOST]
+    games: [TheGame]
 });
-server.run({ port: 8000 });
+const PORT = process.env.PORT || 8000;
+server.run(PORT);

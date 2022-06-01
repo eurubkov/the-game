@@ -6,6 +6,7 @@ import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
 const pilesStyle = {
     justifyContent: "center",
     display: "flex",
+    flexWrap: "wrap",
 }
 const pileStyle = {
     border: '1px solid #555',

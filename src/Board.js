@@ -27,7 +27,6 @@ const INDEX_TO_PILE_MAP = {
 
 
 const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
-    console.log(G);
     const currentPlayerName = props.matchData[ctx.currentPlayer].name;
     const onEndTurn = () => {
         events.endTurn();

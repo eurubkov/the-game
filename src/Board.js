@@ -1,6 +1,7 @@
 import React from "react";
 import { CanPlayCard } from "./Game.js";
 import Card from "./Card.js";
+import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
 
 const pilesStyle = {
     justifyContent: "center",
@@ -33,19 +34,13 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
     }
     const onDragDrop = (e) => {
         e.preventDefault();
-        const card = e.dataTransfer.getData("card").replace("<h1>", "").replace("</h1>", "");
+        const card = e.dragData;
         const pile = INDEX_TO_PILE_MAP[e.target.id];
         if (CanPlayCard(G, ctx, card, pile) === false) {
             alert("Invalid move!");
         } else {
             moves.PlayCard(card, pile);
         }
-    }
-    const onDragCard = (e) => {
-        e.dataTransfer.setData("card", e.target.innerHTML);
-    }
-    const allowDropCard = (e) => {
-        e.preventDefault();
     }
 
     if (ctx.gameover) {
@@ -61,13 +56,15 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
     for (let i = 0; i < G.piles.length; i++) {
         let direction = i < 2 ? "UP" : "DOWN";
         pilesElements.push(
-            (<div key={i} style={directionStyle}>{direction}<Card value={G.piles[i]} id={i} onDrop={(e) => onDragDrop(e)} onDragOver={allowDropCard} key={i} style={pileStyle} /></div>)
+            (<div key={i} style={directionStyle}>{direction}<DropTarget targetKey="pile" onHit={(e) => onDragDrop(e)} ><Card value={G.piles[i]} id={i} key={i} style={pileStyle} /></DropTarget></div>)
         );
     }
     const isDraggable = ctx.currentPlayer === playerID;
     let hand = [];
     for (let i = 0; i < G.players[playerID].hand.length; i++) {
-        hand.push((<Card value={G.players[playerID].hand[i]} onDragStart={onDragCard} draggable={isDraggable} key={i} style={pileStyle} />))
+        const handValue = G.players[playerID].hand[i];
+        hand.push((
+            <DragDropContainer targetKey="pile" dragData={handValue}><Card value={handValue} key={i} style={pileStyle} /></DragDropContainer>))
     }
     return (<div>
         <Card value={G.deck.length} />

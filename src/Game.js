@@ -1,7 +1,7 @@
-import { INVALID_MOVE } from 'boardgame.io/core';
+import { INVALID_MOVE, PlayerView } from 'boardgame.io/core';
 
 const DECK_SIZE = 98;
-const HAND_SIZE = 7;
+const GET_HAND_SIZE = (G, ctx) => ctx.numPlayers === 2 ? 7 : 6;
 
 const FIRST_UP = "first_up";
 const SECOND_UP = "second_up";
@@ -20,26 +20,32 @@ const PILES_MAP = {
 
 
 const DrawCard = (G, ctx) => {
+    DrawCardForPlayer(G, ctx, ctx.currentPlayer);
+}
+
+const DrawCardForPlayer = (G, ctx, playerID) => {
+    G.deck = ctx.random.Shuffle(G.deck);
     const card = G.deck.pop();
-    G.hands[ctx.currentPlayer].push(card);
+    G.players[playerID].hand.push(card);
+    G.players[playerID].hand.sort((a, b) => a - b);
 }
 
 const Replenish = (G, ctx) => {
-    while (G.deck.length > 0 && G.hands[ctx.currentPlayer].length < HAND_SIZE) {
+    while (G.deck.length > 0 && G.players[ctx.currentPlayer].hand.length < GET_HAND_SIZE(G, ctx)) {
         DrawCard(G, ctx);
     }
 }
 
 const PlayCard = (G, ctx, card, pile) => {
-    const cardIndex = G.hands[ctx.currentPlayer].indexOf(+card);
+    const cardIndex = G.players[ctx.currentPlayer].hand.indexOf(+card);
     if (cardIndex < 0 || !CanPlayCard(G, ctx, card, pile)) {
         return INVALID_MOVE;
     }
-    G.hands[ctx.currentPlayer].splice(cardIndex, 1);
-    G.piles[PILES_MAP[pile]] = card;
+    G.players[ctx.currentPlayer].hand.splice(cardIndex, 1);
+    G.piles[PILES_MAP[pile]] = parseInt(card);
 }
 
-const CanPlayCard = (G, ctx, card, pile) => {
+export const CanPlayCard = (G, ctx, card, pile) => {
     if (UP_PILES.includes(pile)) {
         const pileIndex = PILES_MAP[pile];
         if (card > G.piles[pileIndex] || G.piles[pileIndex] - card === 10) {
@@ -60,7 +66,7 @@ const CanPlayCard = (G, ctx, card, pile) => {
 const HasValidMoves = (G, ctx) => {
     const piles = Object.keys(PILES_MAP);
     for (const pile of piles) {
-        if (G.hands[ctx.currentPlayer].length === 0 || G.hands[ctx.currentPlayer].some(card => CanPlayCard(G, ctx, card, pile))) {
+        if (G.players[ctx.currentPlayer].hand.length === 0 || G.players[ctx.currentPlayer].hand.some(card => CanPlayCard(G, ctx, card, pile))) {
             return true;
         }
     }
@@ -70,17 +76,36 @@ const HasValidMoves = (G, ctx) => {
 
 
 export const TheGame = {
+    name: "TheGame",
+    minPlayers: 2,
+    maxPlayers: 5,
+    playerView: PlayerView.STRIP_SECRETS,
     setup: (ctx) => ({
         deck: ctx.random.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)),
-        hands: Array(2).fill([]),
         piles: [1, 1, 100, 100],
-        test: "abc"
+        players: {
+            "0": {
+                hand: []
+            },
+            "1": {
+                hand: []
+            },
+            "2": {
+                hand: []
+            },
+            "3": {
+                hand: []
+            },
+            "4": {
+                hand: []
+            },
+        }
     }),
 
     ai: {
         enumerate: (G, ctx) => {
             let moves = [];
-            for (let card of G.hands[ctx.currentPlayer]) {
+            for (let card of G.players[ctx.currentPlayer].hand) {
                 for (let pile of Object.keys(PILES_MAP)) {
                     if (CanPlayCard(G, ctx, card, pile)) {
                         moves.push({
@@ -94,7 +119,7 @@ export const TheGame = {
     },
 
     endIf: (G, ctx) => {
-        if (G.deck.length === 0 && G.hands.every(x => x.length === 0)) {
+        if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
             return { won: true }
         }
 
@@ -108,12 +133,11 @@ export const TheGame = {
     phases: {
         draw: {
             start: true,
-            endIf: (G, ctx) => (G.deck.length <= DECK_SIZE - ctx.numPlayers * HAND_SIZE),
+            endIf: (G, ctx) => (G.deck.length <= DECK_SIZE - ctx.numPlayers * GET_HAND_SIZE(G, ctx)),
             onBegin: (G, ctx) => {
-                while (G.deck.length > DECK_SIZE - ctx.numPlayers * HAND_SIZE) {
+                while (G.deck.length > DECK_SIZE - ctx.numPlayers * GET_HAND_SIZE(G, ctx)) {
                     for (let i = 0; i < ctx.numPlayers; i++) {
-                        const card = G.deck.pop();
-                        G.hands[ctx.playOrder[i]].push(card);
+                        DrawCardForPlayer(G, ctx, ctx.playOrder[i]);
                     }
                 }
             },

@@ -1,6 +1,10 @@
-import { Client } from "boardgame.io/react";
-import TheGameBoard from "./Board";
-import { TheGame } from "./Game"
+import LobbyView from "./LobbyView";
 
-const App = Client({ game: TheGame, board: TheGameBoard });
+const App = () => {
+    return (
+        <div>
+            <LobbyView />
+        </div>
+    );
+}
 export default App;

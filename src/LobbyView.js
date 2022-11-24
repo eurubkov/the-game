@@ -2,7 +2,7 @@ import { Lobby } from 'boardgame.io/react';
 import { TheGame } from './Game';
 import TheGameBoard from './Board';
 
-const server = `https://the-game.up.railway.app`;
+const server = `https://the-game-100-4h5s.onrender.com`;
 const LobbyView = () => (<Lobby
     gameServer={server}
     lobbyServer={server}

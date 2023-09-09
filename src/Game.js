@@ -43,6 +43,7 @@ const PlayCard = (G, ctx, card, pile) => {
     }
     G.players[ctx.currentPlayer].hand.splice(cardIndex, 1);
     G.piles[PILES_MAP[pile]] = parseInt(card);
+    G.turnMovesMade++;
 }
 
 export const CanPlayCard = (G, ctx, card, pile) => {
@@ -63,14 +64,21 @@ export const CanPlayCard = (G, ctx, card, pile) => {
     }
 }
 
+const MinRequiredMoves = (G) => {
+    return G.deck.length > 0 ? 2 : 1;
+}
+
 const HasValidMoves = (G, ctx) => {
+    const minRequiredMoves = MinRequiredMoves(G);
     const piles = Object.keys(PILES_MAP);
     for (const pile of piles) {
         if (G.players[ctx.currentPlayer].hand.length === 0 || G.players[ctx.currentPlayer].hand.some(card => CanPlayCard(G, ctx, card, pile))) {
             return true;
         }
     }
-    return false;
+    console.log(`${minRequiredMoves} required`)
+    console.log(`${G.turnMovesMade} made`)
+    return G.turnMovesMade >= minRequiredMoves;
 
 }
 
@@ -99,7 +107,8 @@ export const TheGame = {
             "4": {
                 hand: []
             },
-        }
+        },
+        turnMovesMade: 0
     }),
 
     ai: {
@@ -151,7 +160,10 @@ export const TheGame = {
             turn: {
                 minMoves: 2, maxMoves: 7,
                 onEnd: (G, ctx) => {
-                    Replenish(G, ctx)
+                    Replenish(G, ctx);
+                },
+                onBegin: (G, ctx) => {
+                    G.turnMovesMade = 0;
                 }
             },
             next: "playCardEmptyDeck"
@@ -161,7 +173,10 @@ export const TheGame = {
                 PlayCard
             },
             turn: {
-                minMoves: 1, maxMoves: 7
+                minMoves: 1, maxMoves: 7,
+                onBegin: (G, ctx) => {
+                    G.turnMovesMade = 0;
+                }
             }
         }
     }

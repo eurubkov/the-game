@@ -1,6 +1,7 @@
 import React from "react";
 import { CanPlayCard } from "./Game.js";
 import Card from "./Card.js";
+import GameOver from "./GameOver.js";
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
 import { AwesomeButton } from "react-awesome-button";
 import "react-awesome-button/dist/styles.css";
@@ -40,8 +41,6 @@ const INDEX_TO_PILE_MAP = {
     3: "second_down"
 }
 
-
-
 const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
     const currentPlayerName = props.matchData[ctx.currentPlayer].name;
     const onEndTurn = () => {
@@ -55,15 +54,6 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
             alert("Invalid move!");
         } else {
             moves.PlayCard(card, pile);
-        }
-    }
-
-    if (ctx.gameover) {
-        if (ctx.gameover.won) {
-            return (<h1>You Beat The Game!</h1>);
-        }
-        else {
-            return (<h1>You Lost. Try Better Next Time!</h1>);
         }
     }
 
@@ -85,11 +75,13 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         <Card value={G.deck.length} />
         <h3 style={{ textAlign: "center" }}>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
+        {ctx.gameover ? <GameOver gameover={ctx.gameover}/> : <></>}
         <h2 style={{ textAlign: "center", color: "red" }}>{currentPlayerName}'s Turn</h2>
         <h3 style={{ textAlign: "center" }}>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
-        <Button disabled={!isDraggable} onPress={onEndTurn} text={"End Turn"}></Button>
-        <Button onPress={props.undo} text={"Undo"} type="secondary" />
+        {!ctx.gameover ? <><Button disabled={!isDraggable} onPress={onEndTurn} text={"End Turn"}></Button>
+        <Button onPress={props.undo} text={"Undo"} type="secondary" /></> : <></>}
+        
     </div>)
 };
 

@@ -73,6 +73,8 @@ const MinRequiredMoves = (G) => {
     return G.deck.length > 0 ? 2 : 1;
 }
 
+export default MinRequiredMoves;
+
 const HasValidMoves = (G, ctx) => {
     const minRequiredMoves = MinRequiredMoves(G);
     const piles = Object.keys(PILES_MAP);
@@ -81,8 +83,6 @@ const HasValidMoves = (G, ctx) => {
             return true;
         }
     }
-    console.log(`${minRequiredMoves} required`)
-    console.log(`${G.turnMovesMade} made`)
     return G.turnMovesMade >= minRequiredMoves;
 
 }

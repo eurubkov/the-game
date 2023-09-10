@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CanPlayCard } from "./Game";
+import MinRequiredMoves, { CanPlayCard } from "./Game";
 import Card from "./Card";
 import GameOver from "./GameOver";
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
@@ -66,7 +66,7 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         <h2 style={{ textAlign: "center", color: "red" }}>{currentPlayerName}'s Turn</h2>
         <h3 style={{ textAlign: "center" }}>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
-        {!ctx.gameover ? <><Button type="primary" disabled={!isDraggable} onClick={onEndTurn}>End Turn</Button>
+        {!ctx.gameover ? <><Button type="primary" disabled={G.turnMovesMade < MinRequiredMoves(G) || !isDraggable} onClick={onEndTurn}>End Turn</Button>
         <Button onClick={props.undo} type="default" disabled={G.turnMovesMade === 0 || !isDraggable}>Undo</Button></> : <></>}
         
     </div>)

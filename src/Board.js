@@ -1,6 +1,6 @@
 import React from "react";
 import { CanPlayCard } from "./Game.js";
-import Card from "./Card.js";
+import Card from "./Card";
 import GameOver from "./GameOver.js";
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
 import { AwesomeButton } from "react-awesome-button";

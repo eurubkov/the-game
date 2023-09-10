@@ -1,5 +1,10 @@
 import { INVALID_MOVE, PlayerView } from 'boardgame.io/core';
 
+interface Move {
+    move: string;
+    args: [number, string];
+}
+
 const DECK_SIZE = 98;
 const GET_HAND_SIZE = (G, ctx) => ctx.numPlayers === 2 ? 7 : 6;
 
@@ -113,7 +118,7 @@ export const TheGame = {
 
     ai: {
         enumerate: (G, ctx) => {
-            let moves = [];
+            let moves: Move[] = [];
             for (let card of G.players[ctx.currentPlayer].hand) {
                 for (let pile of Object.keys(PILES_MAP)) {
                     if (CanPlayCard(G, ctx, card, pile)) {

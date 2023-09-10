@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CanPlayCard } from "./Game.js";
+import { CanPlayCard } from "./Game";
 import Card from "./Card";
 import GameOver from "./GameOver";
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container';

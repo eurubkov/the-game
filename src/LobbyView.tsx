@@ -1,9 +1,11 @@
+import * as React from "react";
 import { Lobby } from 'boardgame.io/react';
 import { TheGame } from './Game';
 import TheGameBoard from './Board';
 
 const server = `https://the-game-100-4h5s.onrender.com`;
-const LobbyView = () => (<Lobby
+const TypedLobby = Lobby as unknown as React.FC<any>;
+const LobbyView = () => (<TypedLobby
     gameServer={server}
     lobbyServer={server}
     gameComponents={[

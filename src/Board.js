@@ -3,20 +3,7 @@ import { CanPlayCard } from "./Game.js";
 import Card from "./Card";
 import GameOver from "./GameOver.js";
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
-import { AwesomeButton } from "react-awesome-button";
-import "react-awesome-button/dist/styles.css";
-
-const Button = ({ onPress, text, type = "primary" }) => {
-    return (
-        <AwesomeButton
-            type={type}
-            ripple
-            onPress={onPress}
-        >
-            {text}
-        </AwesomeButton>
-    );
-}
+import { Button } from 'antd';
 
 const pilesStyle = {
     justifyContent: "center",
@@ -79,8 +66,8 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         <h2 style={{ textAlign: "center", color: "red" }}>{currentPlayerName}'s Turn</h2>
         <h3 style={{ textAlign: "center" }}>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
-        {!ctx.gameover ? <><Button disabled={!isDraggable} onPress={onEndTurn} text={"End Turn"}></Button>
-        <Button onPress={props.undo} text={"Undo"} type="secondary" /></> : <></>}
+        {!ctx.gameover ? <><Button type="primary" disabled={!isDraggable} onClick={onEndTurn}>End Turn</Button>
+        <Button onClick={props.undo} type="default">Undo</Button></> : <></>}
         
     </div>)
 };

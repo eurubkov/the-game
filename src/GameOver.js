@@ -1,6 +1,5 @@
 import React from "react";
-import { AwesomeButton } from "react-awesome-button";
-import "react-awesome-button/dist/styles.css";
+import { Button } from 'antd';
 
 const endgameOverlayStyle = {
     position: 'absolute',
@@ -13,24 +12,12 @@ const endgameOverlayStyle = {
     textAlign: 'center',
   };
 
-const Button = ({ onPress, text, type = "primary" }) => {
-return (
-    <AwesomeButton
-        type={type}
-        ripple
-        onPress={onPress}
-    >
-        {text}
-    </AwesomeButton>
-);
-}
-
 const GameOver = ({ gameover }) => {
     console.log(gameover);
     const restartGame = () => {
         window.location.href = '/';
     }
-    const playAgainButton = <Button onPress={restartGame} text={"Play Again"} />;
+    const playAgainButton = <Button type="primary" onClick={restartGame}>Play Again</Button>;
     if (gameover) {
         if (gameover.won) {
             return (<div style={endgameOverlayStyle}>

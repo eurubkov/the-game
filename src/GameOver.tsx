@@ -1,7 +1,7 @@
-import React from "react";
+import * as React from "react";
 import { Button } from 'antd';
 
-const endgameOverlayStyle = {
+const endgameOverlayStyle: React.CSSProperties = {
     position: 'absolute',
     top: '50%',
     left: '50%',

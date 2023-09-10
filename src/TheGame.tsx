@@ -70,11 +70,9 @@ export const CanPlayCard = (G, ctx, card, pile) => {
     }
 }
 
-const MinRequiredMoves = (G) => {
+export const MinRequiredMoves = (G) => {
     return G.deck.length > 0 ? 2 : 1;
 }
-
-export default MinRequiredMoves;
 
 const HasValidMoves = (G, ctx) => {
     const minRequiredMoves = MinRequiredMoves(G);
@@ -116,7 +114,7 @@ const EndTurn = (G, ctx) => {
     ctx.events.endTurn();
 }
 
-export const TheGame = {
+const TheGame = {
     name: "TheGame",
     minPlayers: 2,
     maxPlayers: 5,
@@ -234,3 +232,5 @@ export const TheGame = {
         }
     }
 };
+
+export default TheGame;

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Lobby } from 'boardgame.io/react';
-import { TheGame } from './Game';
+import TheGame from './TheGame';
 import TheGameBoard from './Board';
 
 const server = `https://the-game-100-4h5s.onrender.com`;

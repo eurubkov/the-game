@@ -59,7 +59,10 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
             <DragDropContainer targetKey="pile" dragData={handValue}><Card id={handValue} value={handValue} key={i} style={pileStyle} /></DragDropContainer>))
     }
     return (<div>
-        <Card id={G.deck.length} value={G.deck.length} />
+        <div>
+            <h6 style={{ textAlign: "left" }}>Remaining Cards in Deck</h6>
+            <Card id={G.deck.length} value={G.deck.length} />
+        </div>
         <h3 style={{ textAlign: "center" }}>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
         {ctx.gameover ? <GameOver gameover={ctx.gameover}/> : <></>}

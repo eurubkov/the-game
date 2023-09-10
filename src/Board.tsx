@@ -58,6 +58,7 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         hand.push((
             <DragDropContainer targetKey="pile" dragData={handValue}><Card id={handValue} value={handValue} key={i} style={pileStyle} /></DragDropContainer>))
     }
+
     return (<div>
         <div>
             <h6 style={{ textAlign: "left" }}>Remaining Cards in Deck</h6>

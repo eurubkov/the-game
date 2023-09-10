@@ -2,7 +2,8 @@ import { INVALID_MOVE, PlayerView } from 'boardgame.io/core';
 
 interface Move {
     move: string;
-    args: [number, string];
+    args?: [number, string];
+    score: number;
 }
 
 const DECK_SIZE = 98;
@@ -87,6 +88,33 @@ const HasValidMoves = (G, ctx) => {
 
 }
 
+const evaluateMove = (G, ctx, move) => {
+    const cardValue = move.args[0];
+    const pile = move.args[1];
+    let score = Infinity;
+
+    const pileValue = G.piles[PILES_MAP[pile]];
+
+    if (UP_PILES.includes(pile)) {
+        if (G.piles[PILES_MAP[pile]] - cardValue === 10) {
+            score = -1;
+        } else {
+            score = cardValue - pileValue;
+        }
+    } else {
+        if (cardValue - G.piles[PILES_MAP[pile]] === 10) {
+            score = -1;
+        } else {
+            score = pileValue - cardValue;
+        }
+    }
+
+    return score;
+}
+
+const EndTurn = (G, ctx) => {
+    ctx.events.endTurn();
+}
 
 export const TheGame = {
     name: "TheGame",
@@ -118,21 +146,39 @@ export const TheGame = {
 
     ai: {
         enumerate: (G, ctx) => {
-            let moves: Move[] = [];
-            for (let card of G.players[ctx.currentPlayer].hand) {
-                for (let pile of Object.keys(PILES_MAP)) {
-                    if (CanPlayCard(G, ctx, card, pile)) {
-                        moves.push({
-                            move: "PlayCard", args: [card, pile]
-                        })
-                    }
+          let moves: Move[] = [];
+          const thresholdScore = 3;
+          let shouldEndTurn = true;
+          
+          for (let card of G.players[ctx.currentPlayer].hand) {
+            for (let pile of Object.keys(PILES_MAP)) {
+              if (CanPlayCard(G, ctx, card, pile)) {
+                const score = evaluateMove(G, ctx, { move: "PlayCard", args: [card, pile] });
+                if (score < thresholdScore || G.turnMovesMade < MinRequiredMoves(G)) {
+                  shouldEndTurn = false;
                 }
+                moves.push({
+                  move: "PlayCard", args: [card, pile], score
+                });
+              }
             }
-            return moves;
+          }
+      
+          if (shouldEndTurn) {
+            moves.push({
+              move: "EndTurn", score: -20
+            });
+          }
+      
+          moves.sort((a, b) => a.score - b.score);
+      
+          // Just consider the move with the highest score
+          return [moves[0]];
         }
-    },
+      },
 
     endIf: (G, ctx) => {
+        console.log(G.players);
         if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
             return { won: true }
         }
@@ -160,7 +206,8 @@ export const TheGame = {
         playCard: {
             endIf: (G, ctx) => (G.deck.length === 0),
             moves: {
-                PlayCard
+                PlayCard,
+                EndTurn
             },
             turn: {
                 minMoves: 2, maxMoves: 7,
@@ -175,7 +222,8 @@ export const TheGame = {
         },
         playCardEmptyDeck: {
             moves: {
-                PlayCard
+                PlayCard,
+                EndTurn
             },
             turn: {
                 minMoves: 1, maxMoves: 7,

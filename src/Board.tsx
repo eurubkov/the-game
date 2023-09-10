@@ -1,23 +1,23 @@
-import React from "react";
+import * as React from "react";
 import { CanPlayCard } from "./Game.js";
 import Card from "./Card";
 import GameOver from "./GameOver";
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
 import { Button } from 'antd';
 
-const pilesStyle = {
+const pilesStyle: React.CSSProperties= {
     justifyContent: "center",
     display: "flex",
     flexWrap: "wrap",
 }
-const pileStyle = {
+const pileStyle: React.CSSProperties= {
     border: '1px solid #555',
     width: '50px',
     height: '50px',
     lineHeight: '50px',
     textAlign: 'center'
 };
-const directionStyle = {
+const directionStyle: React.CSSProperties= {
     textAlign: "center"
 };
 
@@ -44,7 +44,7 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         }
     }
 
-    let pilesElements = [];
+    let pilesElements: JSX.Element[] = [];
     for (let i = 0; i < G.piles.length; i++) {
         let direction = i < 2 ? "UP" : "DOWN";
         pilesElements.push(
@@ -52,14 +52,14 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         );
     }
     const isDraggable = ctx.currentPlayer === playerID;
-    let hand = [];
+    let hand: JSX.Element[] = [];
     for (let i = 0; i < G.players[playerID].hand.length; i++) {
         const handValue = G.players[playerID].hand[i];
         hand.push((
-            <DragDropContainer targetKey="pile" dragData={handValue}><Card value={handValue} key={i} style={pileStyle} /></DragDropContainer>))
+            <DragDropContainer targetKey="pile" dragData={handValue}><Card id={handValue} value={handValue} key={i} style={pileStyle} /></DragDropContainer>))
     }
     return (<div>
-        <Card value={G.deck.length} />
+        <Card id={G.deck.length} value={G.deck.length} />
         <h3 style={{ textAlign: "center" }}>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
         {ctx.gameover ? <GameOver gameover={ctx.gameover}/> : <></>}

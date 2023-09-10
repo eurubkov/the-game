@@ -67,6 +67,7 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         <h3 style={{ textAlign: "center" }}>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
         <h2 style={{ textAlign: "center", color: "red" }}>{currentPlayerName}'s Turn</h2>
+        <GameOver gameover={ctx.gameover} />
         <h3 style={{ textAlign: "center" }}>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
         {!ctx.gameover && (

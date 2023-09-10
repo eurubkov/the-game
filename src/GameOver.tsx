@@ -13,7 +13,6 @@ const endgameOverlayStyle: React.CSSProperties = {
   };
 
 const GameOver = ({ gameover }) => {
-    console.log(gameover);
     const restartGame = () => {
         window.location.href = '/';
     }

@@ -3,6 +3,7 @@ import { TheGame } from './Game';
 import LocalBoard from "./LocalBoard";
 import { Client } from 'boardgame.io/react';
 import { Local } from 'boardgame.io/multiplayer'
+import * as React from "react";
 
 const AppClient = Client({
     game: TheGame,

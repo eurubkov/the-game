@@ -67,7 +67,7 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         <h3 style={{ textAlign: "center" }}>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
         {!ctx.gameover ? <><Button type="primary" disabled={!isDraggable} onClick={onEndTurn}>End Turn</Button>
-        <Button onClick={props.undo} type="default">Undo</Button></> : <></>}
+        <Button onClick={props.undo} type="default" disabled={!isDraggable}>Undo</Button></> : <></>}
         
     </div>)
 };

@@ -65,12 +65,25 @@ const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
         </div>
         <h3 style={{ textAlign: "center" }}>Piles</h3>
         <div style={pilesStyle}>{pilesElements}</div>
-        {ctx.gameover ? <GameOver gameover={ctx.gameover}/> : <></>}
         <h2 style={{ textAlign: "center", color: "red" }}>{currentPlayerName}'s Turn</h2>
         <h3 style={{ textAlign: "center" }}>Your Hand</h3>
         <div style={pilesStyle}>{hand}</div>
-        {!ctx.gameover ? <><Button type="primary" disabled={G.turnMovesMade < MinRequiredMoves(G) || !isDraggable} onClick={onEndTurn}>End Turn</Button>
-        <Button onClick={props.undo} type="default" disabled={G.turnMovesMade === 0 || !isDraggable}>Undo</Button></> : <></>}
+        {!ctx.gameover && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+            <Button 
+            type="primary" 
+            disabled={G.turnMovesMade < MinRequiredMoves(G) || !isDraggable} 
+            onClick={onEndTurn}>
+            End Turn
+            </Button>
+            <Button 
+            onClick={props.undo} 
+            type="default" 
+            disabled={G.turnMovesMade === 0 || !isDraggable}>
+            Undo
+            </Button>
+        </div>
+        )}
         
     </div>)
 };

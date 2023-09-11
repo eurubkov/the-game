@@ -145,7 +145,7 @@ const TheGame = {
     ai: {
         enumerate: (G, ctx) => {
           let moves: Move[] = [];
-          const thresholdScore = 3;
+          const thresholdScore = 5;
           let shouldEndTurn = true;
           
           for (let card of G.players[ctx.currentPlayer].hand) {
@@ -176,13 +176,12 @@ const TheGame = {
       },
 
     endIf: (G, ctx) => {
-        console.log(G.players);
         if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
             return { won: true }
         }
 
         if (!HasValidMoves(G, ctx)) {
-            return { won: false }
+            return { won: false, players: G.players }
         }
 
 

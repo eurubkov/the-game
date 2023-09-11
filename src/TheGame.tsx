@@ -74,16 +74,14 @@ export const MinRequiredMoves = (G) => {
     return G.deck.length > 0 ? 2 : 1;
 }
 
-const HasValidMoves = (G, ctx) => {
-    const minRequiredMoves = MinRequiredMoves(G);
+const HasValidMoves = (G, ctx, player) => {
     const piles = Object.keys(PILES_MAP);
     for (const pile of piles) {
-        if (G.players[ctx.currentPlayer].hand.length === 0 || G.players[ctx.currentPlayer].hand.some(card => CanPlayCard(G, ctx, card, pile))) {
+        if (player.hand.length === 0 || player.hand.some(card => CanPlayCard(G, ctx, card, pile))) {
             return true;
         }
     }
-    return G.turnMovesMade >= minRequiredMoves;
-
+    return false;
 }
 
 const evaluateMove = (G, ctx, move) => {
@@ -177,14 +175,24 @@ const TheGame = {
 
     endIf: (G, ctx) => {
         if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
-            return { won: true }
+            return { won: true, players: G.players }
         }
 
-        if (!HasValidMoves(G, ctx)) {
+        const minRequiredMoves = MinRequiredMoves(G);
+        const movesMade = G.turnMovesMade;
+        const currentPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[ctx.currentPlayer]);
+        
+        if (!currentPlayerHasValidMoves && movesMade < minRequiredMoves) {
             return { won: false, players: G.players }
-        }
+        } else if (!currentPlayerHasValidMoves && movesMade >= minRequiredMoves) {
+            // Validate that the next player has valid moves, otherwise end the game
+            const nextPlayer = ctx.playOrder[(ctx.playOrderPos + 1) % ctx.numPlayers];
+            const nextPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[nextPlayer]);
 
-
+            if (!nextPlayerHasValidMoves) {
+                return { won: false, players: G.players }
+            }
+        }      
     },
 
     phases: {

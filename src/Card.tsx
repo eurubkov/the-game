@@ -8,7 +8,7 @@ const cardStyle = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#131313",
+    backgroundColor: "#FF6B6B",
     color: "white",
     margin: "5px"
 }

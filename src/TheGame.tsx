@@ -108,6 +108,26 @@ const evaluateMove = (G, ctx, move) => {
     return score;
 }
 
+const determineStartingPlayer = (G, ctx) => {
+    const playerMetrics = ctx.playOrder.map(playerID => {
+        const hand = G.players[playerID].hand;
+        const sortedHand = [...hand].sort((a, b) => a - b);
+    
+        const lowestTwo = sortedHand[0] + sortedHand[1];
+        const highestTwoAbs = Math.abs(200 - sortedHand[sortedHand.length - 1] - sortedHand[sortedHand.length - 2]);
+        const lowestAndHighest = sortedHand[0] + Math.abs(100 - sortedHand[sortedHand.length - 1]);
+    
+        const metric = Math.min(lowestTwo, highestTwoAbs, lowestAndHighest);
+        return { playerID, metric };
+      });
+    
+      // Sort the players based on metric
+      playerMetrics.sort((a, b) => a.metric - b.metric);
+    
+      // Return the player with the smallest metric
+      return playerMetrics[0].playerID;
+}
+
 const EndTurn = (G, ctx) => {
     ctx.events.endTurn();
 }
@@ -204,6 +224,18 @@ const TheGame = {
                     for (let i = 0; i < ctx.numPlayers; i++) {
                         DrawCardForPlayer(G, ctx, ctx.playOrder[i]);
                     }
+                }
+            },
+            next: "determinePlayOrder"
+        },
+        determinePlayOrder: {
+            turn: {
+                onBegin: (G, ctx) => {
+                    const startingPlayerID = determineStartingPlayer(G, ctx);
+                    ctx.events.endTurn({next: startingPlayerID});
+                },
+                onEnd: (G, ctx) => {
+                    ctx.events.endPhase();
                 }
             },
             next: "playCard"

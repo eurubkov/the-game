@@ -4,7 +4,7 @@ on:
   push
 
 env:
-  BUCKET_NAME : "githubawscredstest"
+  BUCKET_NAME : "githubawscredss3uploadtest"
   AWS_REGION : "us-west-2"
 
 permissions:

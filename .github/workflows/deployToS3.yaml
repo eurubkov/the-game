@@ -31,7 +31,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Sync files to S3
-        uses: aws-actions/s3-sync-action@v2
+        uses: jakejarvis/s3-sync-action@v0.5.1
         with:
           source-dir: './build'
           bucket: ${{ secrets.AWS_S3_BUCKET }}

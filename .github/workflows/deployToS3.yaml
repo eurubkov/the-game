@@ -1,38 +1,28 @@
-name: Deploy React App to S3
-
+# Sample workflow to access AWS resources when workflow is tied to branch
+# The workflow Creates static website using aws s3
+name: AWS example workflow
 on:
-  push:
-    branches:
-      - test_actions_aws
-
+  push
+env:
+  BUCKET_NAME : "githubawscredstest"
+  AWS_REGION : "us-west-2"
+# permission can be added at job level or workflow level
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
 jobs:
-  build-and-deploy:
+  S3PackageUpload:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3
         with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the React app
-        run: npm run build
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Sync files to S3
-        uses: jakejarvis/s3-sync-action@v0.5.1
-        with:
-          source-dir: './build'
-          bucket: ${{ secrets.AWS_S3_BUCKET }}
-          region: ${{ secrets.AWS_REGION }}
+          role-to-assume: GithubS3Access
+          role-session-name: samplerolesession
+          aws-region: ${{ env.AWS_REGION }}
+      # Upload a file to AWS s3
+      - name:  Copy index.html to s3
+        run: |
+          aws s3 cp ./public/index.html s3://${{ env.BUCKET_NAME }}/

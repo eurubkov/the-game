@@ -1,25 +1,15 @@
 import * as React from "react";
 import { Button } from 'antd';
-import Card from './Card';  // Adjust the import path if necessary
-
-const endgameOverlayStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: '20px',
-    borderRadius: '10px',
-    textAlign: 'center',
-};
+import Card from './Card';
+import './GameOver.css';
 
 const RemainingCards = ({ players }) => {
     return (
-        <div>
+        <div className="remaining-cards">
             {Object.keys(players).map(playerID => (
-                <div key={playerID}>
-                    <h2>Player {playerID} Remaining Cards:</h2>
-                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                <div key={playerID} className="player-remaining">
+                    <h3 className="player-title">Player {parseInt(playerID) + 1} Remaining Cards:</h3>
+                    <div className="cards-container">
                         {players[playerID].hand.map((cardValue, index) => (
                             <Card id={cardValue} key={index} value={cardValue} />
                         ))}
@@ -33,28 +23,52 @@ const RemainingCards = ({ players }) => {
 const GameOver = ({ gameover }) => {
     const restartGame = () => {
         window.location.href = '/';
+    };
+
+    if (!gameover) {
+        return null;
     }
-    const playAgainButton = <Button type="primary" onClick={restartGame}>Play Again</Button>;
-    if (gameover) {
-        if (gameover.won) {
-            return (
-                <div style={endgameOverlayStyle}>
-                    <h1>You Beat The Game!</h1>
-                    {playAgainButton}
+
+    const isWin = gameover.won;
+    
+    return (
+        <div className="game-over-overlay">
+            <div className={`game-over-modal ${isWin ? 'win' : 'lose'}`}>
+                <div className="confetti-container">
+                    {isWin && Array.from({ length: 50 }).map((_, i) => (
+                        <div key={i} className="confetti" style={{
+                            left: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            backgroundColor: `hsl(${Math.random() * 360}, 100%, 50%)`
+                        }}></div>
+                    ))}
                 </div>
-            );
-        } else {
-            return (
-                <div style={endgameOverlayStyle}>
-                    <h1>You Lost. Try Better Next Time!</h1>
-                    <RemainingCards players={gameover.players} />
-                    {playAgainButton}
+                
+                <h1 className="game-over-title">
+                    {isWin ? 'Victory!' : 'Game Over'}
+                </h1>
+                
+                <p className="game-over-message">
+                    {isWin 
+                        ? 'Congratulations! You successfully played all cards and beat The Game!' 
+                        : 'You were unable to play the required number of cards. Better luck next time!'}
+                </p>
+                
+                {!isWin && <RemainingCards players={gameover.players} />}
+                
+                <div className="game-over-actions">
+                    <Button 
+                        type="primary" 
+                        size="large"
+                        onClick={restartGame}
+                        className="play-again-button"
+                    >
+                        Play Again
+                    </Button>
                 </div>
-            );
-        }
-    } else {
-        return <></>;
-    }
+            </div>
+        </div>
+    );
 };
 
 export default GameOver;

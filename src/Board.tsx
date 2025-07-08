@@ -1,94 +1,311 @@
 import * as React from "react";
-import { MinRequiredMoves,  CanPlayCard } from "./TheGame";
+import { MinRequiredMoves, CanPlayCard } from "./TheGame";
 import Card from "./Card";
 import GameOver from "./GameOver";
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
 import { Button } from 'antd';
+import { useState } from "react";
 
-const pilesStyle: React.CSSProperties= {
-    justifyContent: "center",
-    display: "flex",
-    flexWrap: "wrap",
+/**
+ * Type definitions for the game state and props
+ */
+interface GameState {
+    deck: number[];
+    piles: number[];
+    players: {
+        [key: string]: {
+            hand: number[];
+        };
+    };
+    turnMovesMade: number;
 }
-const pileStyle: React.CSSProperties= {
-    border: '1px solid #555',
-    width: '50px',
-    height: '50px',
-    lineHeight: '50px',
-    textAlign: 'center'
-};
-const directionStyle: React.CSSProperties= {
-    textAlign: "center"
-};
 
-const INDEX_TO_PILE_MAP = {
+interface GameContext {
+    currentPlayer: string;
+    gameover?: {
+        won: boolean;
+        players: {
+            [key: string]: {
+                hand: number[];
+            };
+        };
+    };
+    playOrder: string[];
+    numPlayers: number;
+}
+
+interface GameMoves {
+    PlayCard: (card: number, pile: string) => void;
+}
+
+interface GameEvents {
+    endTurn: () => void;
+}
+
+interface MatchData {
+    id: string;
+    name: string;
+}
+
+interface GameBoardProps {
+    G: GameState;
+    ctx: GameContext;
+    moves: GameMoves;
+    events: GameEvents;
+    playerID: string;
+    matchData: MatchData[];
+    undo: () => void;
+}
+
+/**
+ * Pile type mapping
+ */
+type PileType = 'up' | 'down';
+
+const INDEX_TO_PILE_MAP: Record<number, string> = {
     0: "first_up",
     1: "second_up",
     2: "first_down",
     3: "second_down"
-}
+};
 
-const TheGameBoard = ({ ctx, G, moves, events, playerID, ...props }) => {
+const PILE_TYPE_MAP: Record<number, PileType> = {
+    0: "up",
+    1: "up",
+    2: "down",
+    3: "down"
+};
+
+const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerID, ...props }) => {
+    const [showInvalidMove, setShowInvalidMove] = useState(false);
     const currentPlayerName = props.matchData[ctx.currentPlayer].name;
+    const isCurrentPlayer = ctx.currentPlayer === playerID;
+    
     const onEndTurn = () => {
         events.endTurn();
+    };
+    
+    /**
+     * Interface for drop event data
+     */
+    interface DropEventData {
+        dragData: number;
+        dropData: {
+            pileIndex: number;
+        };
+        preventDefault: () => void;
+        target: HTMLElement;
     }
-    const onDragDrop = (e) => {
+    
+    /**
+     * Handle card drop on a pile
+     */
+    const onDragDrop = (e: DropEventData) => {
         e.preventDefault();
-        const card = e.dragData;
-        const pile = INDEX_TO_PILE_MAP[e.target.id];
-        if (CanPlayCard(G, ctx, card, pile) === false) {
-            alert("Invalid move!");
+        
+        // Get the card value from dragData and ensure it's a number
+        const card = Number(e.dragData);
+        
+        // Get the pile index from dropData
+        const pileIndex = e.dropData?.pileIndex;
+        
+        if (pileIndex === undefined || pileIndex === null) {
+            console.error('No pile index found in dropData');
+            setShowInvalidMove(true);
+            setTimeout(() => setShowInvalidMove(false), 2000);
+            return;
+        }
+        
+        // Convert pile index to pile name (e.g., "first_up", "second_down")
+        const pile = INDEX_TO_PILE_MAP[pileIndex];
+        
+        // Check if the move is valid according to game rules
+        const isValidMove = CanPlayCard(G, ctx, card, pile);
+        
+        if (!isValidMove) {
+            setShowInvalidMove(true);
+            setTimeout(() => setShowInvalidMove(false), 2000);
         } else {
             moves.PlayCard(card, pile);
         }
-    }
+    };
 
-    let pilesElements: JSX.Element[] = [];
-    for (let i = 0; i < G.piles.length; i++) {
-        let direction = i < 2 ? "UP" : "DOWN";
-        pilesElements.push(
-            (<div key={i} style={directionStyle}>{direction}<DropTarget targetKey="pile" onHit={(e) => onDragDrop(e)} ><Card value={G.piles[i]} id={i} key={i} style={pileStyle} /></DropTarget></div>)
-        );
-    }
-    const isDraggable = ctx.currentPlayer === playerID;
-    let hand: JSX.Element[] = [];
-    for (let i = 0; i < G.players[playerID].hand.length; i++) {
-        const handValue = G.players[playerID].hand[i];
-        hand.push((
-            <DragDropContainer targetKey="pile" dragData={handValue}><Card id={handValue} value={handValue} key={i} style={pileStyle} /></DragDropContainer>))
-    }
-
-    return (<div>
-        <div>
-            <h6 style={{ textAlign: "left" }}>Remaining Cards in Deck</h6>
-            <Card id={G.deck.length} value={G.deck.length} />
+    /**
+     * Create a pile element with the appropriate styling and drop target
+     */
+    const createPileElement = (index: number, value: number, pileType: PileType) => (
+        <div key={index} className="pile-column">
+            <div className="pile-label">
+                {pileType === 'up' ? 'ASCENDING' : 'DESCENDING'}
+            </div>
+            <DropTarget 
+                targetKey="pile" 
+                onHit={(e) => {
+                    // Manually add the pile index to the event
+                    e.dropData = { pileIndex: index };
+                    onDragDrop(e);
+                }}
+            >
+                <Card 
+                    value={value} 
+                    id={`pile-${index}`} 
+                    isPile={true}
+                    pileType={pileType}
+                />
+            </DropTarget>
         </div>
-        <h3 style={{ textAlign: "center" }}>Piles</h3>
-        <div style={pilesStyle}>{pilesElements}</div>
-        <h2 style={{ textAlign: "center", color: "red" }}>{currentPlayerName}'s Turn</h2>
-        <h3 style={{ textAlign: "center" }}>Your Hand</h3>
-        <div style={pilesStyle}>{hand}</div>
-        <GameOver gameover={ctx.gameover}/>
-        {!ctx.gameover && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
-            <Button 
-            type="primary" 
-            disabled={G.turnMovesMade < MinRequiredMoves(G) || !isDraggable} 
-            onClick={onEndTurn}>
-            End Turn
-            </Button>
-            <Button 
-            onClick={props.undo} 
-            type="default" 
-            disabled={G.turnMovesMade === 0 || !isDraggable}>
-            Undo
-            </Button>
-        </div>
-        )}
+    );
+    
+    /**
+     * Render the game piles using modern array methods
+     */
+    const renderPiles = () => {
+        // Create arrays of pile elements grouped by type
+        const pileElements = G.piles.map((value, index) => {
+            const pileType = PILE_TYPE_MAP[index] as 'up' | 'down';
+            return { element: createPileElement(index, value, pileType), type: pileType };
+        });
         
-    </div>)
-};
+        // Filter by type
+        const upPiles = pileElements
+            .filter(pile => pile.type === 'up')
+            .map(pile => pile.element);
+            
+        const downPiles = pileElements
+            .filter(pile => pile.type === 'down')
+            .map(pile => pile.element);
+        
+        return (
+            <div className="piles-container">
+                {upPiles}
+                {downPiles}
+            </div>
+        );
+    };
+    
+    /**
+     * Render player's hand with draggable cards using modern array methods
+     */
+    const renderHand = () => {
+        const isDraggable = isCurrentPlayer;
+        const playerHand = G.players[playerID].hand;
+        
+        const handCards = playerHand.map((handValue, index) => (
+            <DragDropContainer 
+                key={index}
+                targetKey="pile" 
+                dragData={handValue}
+                noDragging={!isDraggable}
+            >
+                <Card 
+                    id={handValue} 
+                    value={handValue} 
+                    isDraggable={isDraggable}
+                />
+            </DragDropContainer>
+        ));
+        
+        return (
+            <div className="cards-container">
+                {handCards}
+            </div>
+        );
+    };
 
+    /**
+     * Render the game header with title and deck information
+     */
+    const renderHeader = () => (
+        <div className="game-header">
+            <h1 className="game-title">The Game</h1>
+            <div className="game-info">
+                <div className="deck-container">
+                    <div className="deck-label">Remaining Cards</div>
+                    <Card id="deck" value={G.deck.length} />
+                </div>
+            </div>
+        </div>
+    );
+    
+    /**
+     * Render the turn indicator
+     */
+    const renderTurnIndicator = () => (
+        <div className={`turn-indicator ${isCurrentPlayer ? 'active' : ''}`}>
+            {isCurrentPlayer ? "Your Turn" : `${currentPlayerName}'s Turn`}
+        </div>
+    );
+    
+    /**
+     * Render the action buttons
+     */
+    const renderActionButtons = () => {
+        if (ctx.gameover) return null;
+        
+        return (
+            <div className="actions-container">
+                <Button 
+                    className="primary-button"
+                    type="primary" 
+                    disabled={G.turnMovesMade < MinRequiredMoves(G) || !isCurrentPlayer} 
+                    onClick={onEndTurn}
+                >
+                    End Turn
+                </Button>
+                <Button 
+                    className="secondary-button"
+                    onClick={props.undo} 
+                    type="default" 
+                    disabled={G.turnMovesMade === 0 || !isCurrentPlayer}
+                >
+                    Undo
+                </Button>
+            </div>
+        );
+    };
+    
+    /**
+     * Render the game rules section
+     */
+    const renderGameRules = () => (
+        <div className="game-rules mt-md">
+            <details>
+                <summary>Game Rules</summary>
+                <div className="rules-content">
+                    <p>Play cards from your hand onto the four piles:</p>
+                    <ul>
+                        <li>On ascending piles (starting at 1), play higher numbers or exactly 10 less</li>
+                        <li>On descending piles (starting at 100), play lower numbers or exactly 10 more</li>
+                        <li>You must play at least 2 cards per turn (1 if the deck is empty)</li>
+                        <li>The goal is to play all cards from the deck and your hands</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+    );
+    
+    return (
+        <div className="game-container">
+            {renderHeader()}
+            {renderPiles()}
+            {renderTurnIndicator()}
+            
+            {showInvalidMove && (
+                <div className="invalid-move-alert">
+                    Invalid move! Try another card or pile.
+                </div>
+            )}
+            
+            <div className="hand-container">
+                <h3 className="hand-label">Your Hand</h3>
+                {renderHand()}
+            </div>
+            
+            <GameOver gameover={ctx.gameover}/>
+            {renderActionButtons()}
+            {renderGameRules()}
+        </div>
+    );
+};
 
 export default TheGameBoard;

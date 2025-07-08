@@ -1,0 +1,161 @@
+.game-over-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.game-over-modal {
+    background-color: white;
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    max-width: 90%;
+    width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    position: relative;
+    animation: modalAppear 0.5s ease-out;
+}
+
+.game-over-modal.win {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 3px solid var(--success-color);
+}
+
+.game-over-modal.lose {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e0eafc 100%);
+    border: 3px solid var(--error-color);
+}
+
+.game-over-title {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-color);
+}
+
+.win .game-over-title {
+    color: var(--success-color);
+}
+
+.lose .game-over-title {
+    color: var(--error-color);
+}
+
+.game-over-message {
+    font-size: 1.2rem;
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+}
+
+.game-over-actions {
+    margin-top: var(--spacing-lg);
+}
+
+.play-again-button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.play-again-button:hover {
+    transform: scale(1.05);
+}
+
+.remaining-cards {
+    margin-top: var(--spacing-lg);
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: var(--border-radius-md);
+}
+
+.player-remaining {
+    margin-bottom: var(--spacing-lg);
+}
+
+.player-title {
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+/* Confetti animation */
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    opacity: 0.7;
+    animation: confettiFall 5s linear infinite;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(calc(100vh)) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes modalAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-over-modal {
+        padding: var(--spacing-lg);
+        width: 90%;
+    }
+    
+    .game-over-title {
+        font-size: 2rem;
+    }
+    
+    .game-over-message {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-over-modal {
+        padding: var(--spacing-md);
+    }
+    
+    .game-over-title {
+        font-size: 1.8rem;
+    }
+    
+    .remaining-cards {
+        max-height: 30vh;
+    }
+}

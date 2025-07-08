@@ -1,0 +1,162 @@
+.card {
+    width: 5rem;
+    height: 7rem;
+    border-radius: var(--border-radius-md);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    color: white;
+    margin: var(--spacing-xs);
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s ease;
+    user-select: none;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%);
+    z-index: 1;
+    border-radius: inherit;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    z-index: 1;
+    border-radius: inherit;
+}
+
+.card-corners {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.card-corner {
+    position: absolute;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: var(--spacing-xs);
+}
+
+.top-left {
+    top: 0;
+    left: 0;
+}
+
+.bottom-right {
+    bottom: 0;
+    right: 0;
+    transform: rotate(180deg);
+}
+
+.card-center {
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.draggable {
+    transform: translateY(0);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.draggable:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    cursor: grab;
+}
+
+.draggable:active {
+    cursor: grabbing;
+    transform: translateY(-2px);
+}
+
+.pile {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.pile-indicator {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    opacity: 0.7;
+    z-index: 2;
+}
+
+.drag-indicator {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    opacity: 0.7;
+    z-index: 2;
+}
+
+/* Animation for when a card is played */
+@keyframes cardPlayed {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.card-played {
+    animation: cardPlayed 0.5s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        width: 4.5rem;
+        height: 6.3rem;
+    }
+    
+    .card-value {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        width: 4rem;
+        height: 5.6rem;
+    }
+    
+    .card-value {
+        font-size: 1.6rem;
+    }
+    
+    .card-corner {
+        font-size: 0.9rem;
+    }
+}

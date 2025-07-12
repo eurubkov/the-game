@@ -130,7 +130,8 @@ const EndTurn = (G, ctx) => {
   ctx.events?.endTurn();
 }
 
-const TheGame: Game = {
+// Use type assertion for the entire game object to handle type mismatches with boardgame.io
+const TheGame = {
   name: "TheGame",
   minPlayers: 1,
   maxPlayers: 5,
@@ -336,4 +337,5 @@ export function isTenJump(G, [card, pile]) {
     (DOWN_PILES.includes(pile) && card - pileVal === 10);
 }
 
-export default TheGame;
+// Cast the entire game object to Game type to satisfy TypeScript
+export default TheGame as Game;

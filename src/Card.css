@@ -93,6 +93,14 @@
     transform: translateY(-2px);
 }
 
+.dragging {
+    opacity: 0.8;
+    transform: scale(1.05) translateY(-10px) !important;
+    box-shadow: var(--shadow-xl) !important;
+    z-index: 1000;
+    cursor: grabbing !important;
+}
+
 .pile {
     border: 2px solid rgba(255, 255, 255, 0.3);
 }

@@ -2,7 +2,6 @@ import * as React from "react";
 import { MinRequiredMoves, CanPlayCard } from "./TheGame";
 import Card from "./Card";
 import GameOver from "./GameOver";
-import { DragDropContainer, DropTarget } from 'react-drag-drop-container';
 import { Button } from 'antd';
 import { useState } from "react";
 
@@ -86,31 +85,17 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
     };
     
     /**
-     * Interface for drop event data
-     */
-    interface DropEventData {
-        dragData: number;
-        dropData: {
-            pileIndex: number;
-        };
-        preventDefault: () => void;
-        target: HTMLElement;
-    }
-    
-    /**
      * Handle card drop on a pile
      */
-    const onDragDrop = (e: DropEventData) => {
+    const onDragDrop = (e: React.DragEvent<HTMLDivElement>, pileIndex: number) => {
         e.preventDefault();
         
-        // Get the card value from dragData and ensure it's a number
-        const card = Number(e.dragData);
+        // Get the card value from the drag data
+        const cardValue = e.dataTransfer.getData("text/plain");
+        const card = Number(cardValue);
         
-        // Get the pile index from dropData
-        const pileIndex = e.dropData?.pileIndex;
-        
-        if (pileIndex === undefined || pileIndex === null) {
-            console.error('No pile index found in dropData');
+        if (isNaN(card)) {
+            console.error('Invalid card value:', cardValue);
             setShowInvalidMove(true);
             setTimeout(() => setShowInvalidMove(false), 2000);
             return;
@@ -131,6 +116,13 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
     };
 
     /**
+     * Handle drag over event to allow dropping
+     */
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault(); // This is necessary to allow dropping
+    };
+    
+    /**
      * Create a pile element with the appropriate styling and drop target
      */
     const createPileElement = (index: number, value: number, pileType: PileType) => (
@@ -138,13 +130,10 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
             <div className="pile-label">
                 {pileType === 'up' ? 'ASCENDING' : 'DESCENDING'}
             </div>
-            <DropTarget 
-                targetKey="pile" 
-                onHit={(e) => {
-                    // Manually add the pile index to the event
-                    e.dropData = { pileIndex: index };
-                    onDragDrop(e);
-                }}
+            <div 
+                className="drop-target"
+                onDrop={(e) => onDragDrop(e, index)}
+                onDragOver={handleDragOver}
             >
                 <Card 
                     value={value} 
@@ -152,7 +141,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                     isPile={true}
                     pileType={pileType}
                 />
-            </DropTarget>
+            </div>
         </div>
     );
     
@@ -191,18 +180,13 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
         const playerHand = G.players[playerID].hand;
         
         const handCards = playerHand.map((handValue, index) => (
-            <DragDropContainer 
-                key={index}
-                targetKey="pile" 
-                dragData={handValue}
-                noDragging={!isDraggable}
-            >
+            <div key={index} className="card-wrapper">
                 <Card 
                     id={handValue} 
                     value={handValue} 
                     isDraggable={isDraggable}
                 />
-            </DragDropContainer>
+            </div>
         ));
         
         return (

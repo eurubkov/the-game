@@ -165,6 +165,22 @@
   margin-bottom: var(--spacing-lg);
 }
 
+.card-wrapper {
+  position: relative;
+  margin: var(--spacing-xs);
+}
+
+.drop-target {
+  position: relative;
+  border-radius: var(--border-radius-md);
+  transition: all 0.2s ease;
+}
+
+.drop-target:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+
 .actions-container {
   display: flex;
   justify-content: center;

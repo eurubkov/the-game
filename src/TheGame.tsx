@@ -229,7 +229,7 @@ const TheGame = {
     }
   },
 
-  endIf: (G, ctx) => {
+  endIf: ({G, ctx }) => {
     if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
       return {
         won: true,
@@ -272,8 +272,8 @@ const TheGame = {
   phases: {
     draw: {
       start: true,
-      endIf: (G, ctx) => (G.deck.length <= DECK_SIZE - ctx.numPlayers * GET_HAND_SIZE(G, ctx)),
-      onBegin: (G, ctx) => {
+      endIf: ({G, ctx }) => (G.deck.length <= DECK_SIZE - ctx.numPlayers * GET_HAND_SIZE(G, ctx)),
+      onBegin: ({ G, ctx }) => {
         while (G.deck.length > DECK_SIZE - ctx.numPlayers * GET_HAND_SIZE(G, ctx)) {
           for (let i = 0; i < ctx.numPlayers; i++) {
             DrawCardForPlayer(G, ctx, ctx.playOrder[i]);
@@ -284,7 +284,7 @@ const TheGame = {
     },
     determinePlayOrder: {
       turn: {
-        onBegin: (G, ctx) => {
+        onBegin: ({ G, ctx }) => {
           const startingPlayerID = determineStartingPlayer(G, ctx);
           ctx.events.endTurn({ next: startingPlayerID });
         },
@@ -295,7 +295,7 @@ const TheGame = {
       next: "playCard"
     },
     playCard: {
-      endIf: (G, ctx) => (G.deck.length === 0),
+      endIf: ({G, ctx }) => (G.deck.length === 0),
       moves: {
         PlayCard,
         EndTurn
@@ -306,7 +306,7 @@ const TheGame = {
         onEnd: (G, ctx) => {
           Replenish(G, ctx);
         },
-        onBegin: (G, ctx) => {
+        onBegin: ({ G, ctx }) => {
           G.turnMovesMade = 0;
         }
       },
@@ -319,7 +319,7 @@ const TheGame = {
       },
       turn: {
         minMoves: 1, maxMoves: 7,
-        onBegin: (G, ctx) => {
+        onBegin: ({ G, ctx }) => {
           G.turnMovesMade = 0;
         }
       }

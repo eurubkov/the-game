@@ -27,7 +27,12 @@ const GameOver = ({ gameover }) => {
     const [savedToLeaderboard, setSavedToLeaderboard] = useState(false);
     
     const restartGame = () => {
-        window.location.href = '/';
+        // First hide the overlay to ensure proper unmounting
+        setIsVisible(false);
+        // Use setTimeout to ensure component is fully unmounted before navigation
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 0);
     };
     
     const closeOverlay = () => {

@@ -63,8 +63,12 @@ const SinglePlayerApp: React.FC = () => {
   };
 
   const handleBackToSetup = () => {
+    // First set gameStarted to false to hide the component
     setGameStarted(false);
-    setGameClient(null);
+    // Use setTimeout to ensure component is fully unmounted before setting GameClient to null
+    setTimeout(() => {
+      setGameClient(null);
+    }, 0);
   };
 
   if (gameStarted && GameClient) {

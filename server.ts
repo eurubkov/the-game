@@ -10,8 +10,4 @@ const PORT = parseInt(process.env.PORT || '8000', 10);
 if (isNaN(PORT)) {
     throw new Error("Invalid PORT value");
 }
-
-const lobbyConfig = {
-  apiPort: 8080
-};
-server.run({port: PORT, lobbyConfig: lobbyConfig});
+server.run(PORT);

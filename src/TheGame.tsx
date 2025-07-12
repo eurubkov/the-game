@@ -234,7 +234,7 @@ const TheGame = {
   } as any,
 
   endIf: (G, ctx) => {
-    if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
+    if (G.deck && G.deck.length === 0 && G.players && Object.keys(G.players).every(x => G.players[x] && G.players[x].hand && G.players[x].hand.length === 0)) {
       return {
         won: true,
         players: G.players,

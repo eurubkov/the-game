@@ -215,8 +215,12 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
      * Render the turn indicator
      */
     const renderTurnIndicator = () => (
-        <div className={`turn-indicator ${isCurrentPlayer ? 'active' : ''}`}>
-            {isCurrentPlayer ? "Your Turn" : `${currentPlayerName}'s Turn`}
+        <div className={`turn-indicator ${isCurrentPlayer ? 'your-turn' : 'other-turn'}`}>
+            {isCurrentPlayer ? (
+                <span className="turn-text">Your Turn</span>
+            ) : (
+                `${currentPlayerName}'s Turn`
+            )}
         </div>
     );
     
@@ -273,7 +277,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
     );
     
     return (
-        <div className="game-container">
+        <div className={`game-container ${isCurrentPlayer ? 'your-turn' : ''}`}>
             {renderHeader()}
             {renderPiles()}
             {renderTurnIndicator()}

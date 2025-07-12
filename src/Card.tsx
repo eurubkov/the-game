@@ -92,7 +92,7 @@ const Card: React.FC<CardProps> = ({
             )}
             {isDraggable && (
                 <div className="drag-indicator">
-                    <span>⋮⋮</span>
+                    <span>⇆</span>
                 </div>
             )}
         </div>

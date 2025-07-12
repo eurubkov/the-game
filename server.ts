@@ -3,7 +3,7 @@ import TheGame from "./src/TheGame";
 
 const server = Server({
     games: [TheGame],
-    origins: [Origins.LOCALHOST_IN_DEVELOPMENT, "https://thegame100.netlify.app"]
+    origins: [Origins.LOCALHOST, Origins.LOCALHOST_IN_DEVELOPMENT, "https://thegame100.netlify.app"]
 });
 const PORT = parseInt(process.env.PORT || '8000', 10);
 

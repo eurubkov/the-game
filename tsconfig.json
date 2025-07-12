@@ -6,9 +6,10 @@
         "module": "CommonJS",            // specify module code generation
         "esModuleInterop": true,
         "jsx": "react",             // use typescript to transpile jsx to js
-        "target": "es5",            // specify ECMAScript target version
+        "target": "es2017",            // specify ECMAScript target version
         "allowJs": true,            // allow a partial TypeScript and JavaScript codebase
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "downlevelIteration": true,  // let TS poly-fill iterator helpers
     },
     "include": [
         "./src/"

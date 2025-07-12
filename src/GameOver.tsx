@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState } from "react";
 import { Button } from 'antd';
 import Card from './Card';
 import './GameOver.css';
@@ -21,12 +22,39 @@ const RemainingCards = ({ players }) => {
 };
 
 const GameOver = ({ gameover }) => {
+    const [isVisible, setIsVisible] = useState(true);
+    
     const restartGame = () => {
         window.location.href = '/';
     };
+    
+    const closeOverlay = () => {
+        setIsVisible(false);
+    };
+    
+    // Reset visibility when game state changes
+    React.useEffect(() => {
+        if (gameover) {
+            setIsVisible(true);
+        }
+    }, [gameover]);
 
     if (!gameover) {
         return null;
+    }
+    
+    if (!isVisible) {
+        return (
+            <div className="game-over-minimized">
+                <Button 
+                    type="primary" 
+                    onClick={() => setIsVisible(true)}
+                    className="show-results-button"
+                >
+                    Show Game Results
+                </Button>
+            </div>
+        );
     }
 
     const isWin = gameover.won;
@@ -64,6 +92,14 @@ const GameOver = ({ gameover }) => {
                         className="play-again-button"
                     >
                         Play Again
+                    </Button>
+                    <Button 
+                        type="default" 
+                        size="large"
+                        onClick={closeOverlay}
+                        className="close-overlay-button"
+                    >
+                        Close & View Board
                     </Button>
                 </div>
             </div>

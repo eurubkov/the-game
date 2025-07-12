@@ -6,6 +6,64 @@
   background: linear-gradient(135deg, var(--background-color) 0%, #e9ecef 100%);
 }
 
+/* Mode Selection Screen */
+.mode-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+.mode-selection h1 {
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  color: #2c3e50;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mode-buttons button {
+  min-width: 200px;
+  height: 50px;
+  font-size: 1.2rem;
+}
+
+/* Single Player Setup */
+.single-player-setup {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.single-player-setup h1 {
+  margin-bottom: 30px;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.single-player-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .mode-buttons {
+    flex-direction: row;
+  }
+}
+
 .game-container {
   max-width: 1200px;
   margin: 0 auto;

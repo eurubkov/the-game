@@ -58,16 +58,55 @@
 
 .game-over-actions {
     margin-top: var(--spacing-lg);
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
 }
 
-.play-again-button {
+.play-again-button, 
+.close-overlay-button {
     padding: var(--spacing-sm) var(--spacing-lg);
     font-size: 1.1rem;
     transition: all 0.3s ease;
 }
 
-.play-again-button:hover {
+.play-again-button:hover, 
+.close-overlay-button:hover {
     transform: scale(1.05);
+}
+
+/* Minimized game over state */
+.game-over-minimized {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 900;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.show-results-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1rem;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius-md);
+    transition: all 0.3s ease;
+}
+
+.show-results-button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .remaining-cards {

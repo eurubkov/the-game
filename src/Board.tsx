@@ -247,7 +247,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                 <Button 
                     className="primary-button"
                     type="primary" 
-                    disabled={G.turnMovesMade < MinRequiredMoves(G) || !isCurrentPlayer} 
+                    disabled={G.turnMovesMade < MinRequiredMoves(G, ctx) || !isCurrentPlayer} 
                     onClick={onEndTurn}
                 >
                     End Turn
@@ -276,7 +276,11 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                     <ul>
                         <li>On ascending piles (starting at 1), play higher numbers or exactly 10 less</li>
                         <li>On descending piles (starting at 100), play lower numbers or exactly 10 more</li>
-                        <li>You must play at least 2 cards per turn (1 if the deck is empty)</li>
+                        <li>
+                            {ctx.numPlayers === 1 
+                                ? "In single-player mode, you must play at least 1 card per turn" 
+                                : "In multiplayer mode, you must play at least 2 cards per turn (1 if the deck is empty)"}
+                        </li>
                         <li>The goal is to play all cards from the deck and your hands</li>
                     </ul>
                 </div>

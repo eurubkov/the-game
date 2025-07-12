@@ -1,0 +1,39 @@
+.leaderboard-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.leaderboard-description {
+  margin-bottom: 20px;
+}
+
+.leaderboard-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ant-table-wrapper {
+  margin-top: 20px;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f0f2f5;
+  font-weight: bold;
+}
+
+.ant-table-row:hover {
+  cursor: pointer;
+}
+
+/* Highlight rows with victories */
+.ant-table-row td:last-child:contains("Victory") {
+  color: #52c41a;
+  font-weight: bold;
+}
+
+/* Highlight rows with defeats */
+.ant-table-row td:last-child:contains("Defeat") {
+  color: #f5222d;
+}

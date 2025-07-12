@@ -6,11 +6,12 @@ import { MCTSBot } from 'boardgame.io/ai';
 import CooperativeMCTSBot from './CooperativeMCTSBot';
 import TheGame from './TheGame';
 import LocalBoard from './LocalBoard';
-import { Button, Select, Form, InputNumber } from 'antd';
+import { Button, Select, Form, InputNumber, Switch, Tooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import './App.css';
 
 // Create a client for single-player mode
-const createSinglePlayerClient = (numPlayers: number, numBots: number) => {
+const createSinglePlayerClient = (numPlayers: number, numBots: number, customSeed?: number) => {
   // Create an object of bot factories for the specified number of bots
   const botFactories = {};
   
@@ -25,8 +26,13 @@ const createSinglePlayerClient = (numPlayers: number, numBots: number) => {
   console.log(`Creating game with ${numPlayers} players (1 human + ${numPlayers - 1} bots)`);
   console.log('Bot factories:', Object.keys(botFactories));
 
+  // Configure game with optional custom seed
+  const gameConfig = customSeed !== undefined
+    ? { ...TheGame, seed: customSeed }
+    : TheGame;
+
   return Client({
-    game: TheGame,
+    game: gameConfig,
     board: LocalBoard,
     numPlayers,
     multiplayer: Local({
@@ -41,12 +47,18 @@ const SinglePlayerApp: React.FC = () => {
   const [totalPlayers, setTotalPlayers] = useState(2);
   const [gameStarted, setGameStarted] = useState(false);
   const [GameClient, setGameClient] = useState<React.ComponentType<any> | null>(null);
+  const [useCustomSeed, setUseCustomSeed] = useState(false);
+  const [customSeed, setCustomSeed] = useState<number | null>(null);
 
   // Calculate number of bots (total players minus the human player)
   const numBots = totalPlayers - 1;
 
   const handleStartGame = () => {
-    const Client = createSinglePlayerClient(totalPlayers, numBots);
+    const Client = createSinglePlayerClient(
+      totalPlayers, 
+      numBots, 
+      useCustomSeed && customSeed !== null ? customSeed : undefined
+    );
     setGameClient(() => Client);
     setGameStarted(true);
   };
@@ -95,8 +107,44 @@ const SinglePlayerApp: React.FC = () => {
           </div>
         </Form.Item>
         
+        <Form.Item 
+          label={
+            <span>
+              Use Custom Seed 
+              <Tooltip title="Using a custom seed allows you to replay the same game configuration. Games with the same seed and player count will have the same card distribution.">
+                <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+              </Tooltip>
+            </span>
+          }
+        >
+          <Switch 
+            checked={useCustomSeed} 
+            onChange={(checked) => setUseCustomSeed(checked)} 
+          />
+        </Form.Item>
+        
+        {useCustomSeed && (
+          <Form.Item label="Seed Value">
+            <InputNumber 
+              min={1} 
+              max={999999} 
+              value={customSeed} 
+              onChange={(value) => setCustomSeed(value as number)} 
+              style={{ width: '100%' }}
+              placeholder="Enter a number to use as seed"
+            />
+            <div style={{ padding: '8px 0', color: '#666', fontSize: '0.9em' }}>
+              Share this seed with friends to compare your performance on the same game!
+            </div>
+          </Form.Item>
+        )}
+        
         <Form.Item>
-          <Button type="primary" onClick={handleStartGame}>
+          <Button 
+            type="primary" 
+            onClick={handleStartGame}
+            disabled={useCustomSeed && customSeed === null}
+          >
             Start Game
           </Button>
         </Form.Item>

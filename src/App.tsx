@@ -2,6 +2,7 @@ import LobbyView from "./LobbyView";
 import TheGame from './TheGame';
 import LocalBoard from "./LocalBoard";
 import SinglePlayerApp from "./SinglePlayerApp";
+import Leaderboard from "./Leaderboard";
 import { Client } from 'boardgame.io/react';
 import * as React from "react";
 import { useState } from "react";
@@ -20,7 +21,8 @@ const DEBUG_MODE = process.env.REACT_APP_DEBUG_MODE === 'true';
 enum GameMode {
     SELECTION = 'selection',
     SINGLE_PLAYER = 'single_player',
-    MULTIPLAYER = 'multiplayer'
+    MULTIPLAYER = 'multiplayer',
+    LEADERBOARD = 'leaderboard'
 }
 
 const App = () => {
@@ -57,6 +59,14 @@ const App = () => {
                         >
                             Multiplayer
                         </Button>
+                        <Button 
+                            type="default" 
+                            size="large"
+                            onClick={() => setGameMode(GameMode.LEADERBOARD)}
+                            style={{ margin: '10px' }}
+                        >
+                            Leaderboard
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -74,6 +84,21 @@ const App = () => {
                     Back to Mode Selection
                 </Button>
                 <SinglePlayerApp />
+            </div>
+        );
+    }
+
+    // Leaderboard mode
+    if (gameMode === GameMode.LEADERBOARD) {
+        return (
+            <div className="App">
+                <Button 
+                    onClick={() => setGameMode(GameMode.SELECTION)} 
+                    style={{ margin: '10px' }}
+                >
+                    Back to Mode Selection
+                </Button>
+                <Leaderboard />
             </div>
         );
     }

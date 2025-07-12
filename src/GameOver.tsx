@@ -1,8 +1,9 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from 'antd';
 import Card from './Card';
 import './GameOver.css';
+import { saveToLeaderboard, calculateTotalRemainingCards } from './Leaderboard';
 
 const RemainingCards = ({ players }) => {
     return (
@@ -23,6 +24,7 @@ const RemainingCards = ({ players }) => {
 
 const GameOver = ({ gameover }) => {
     const [isVisible, setIsVisible] = useState(true);
+    const [savedToLeaderboard, setSavedToLeaderboard] = useState(false);
     
     const restartGame = () => {
         window.location.href = '/';
@@ -36,8 +38,29 @@ const GameOver = ({ gameover }) => {
     React.useEffect(() => {
         if (gameover) {
             setIsVisible(true);
+            setSavedToLeaderboard(false);
         }
     }, [gameover]);
+    
+    // Save game result to leaderboard when game ends
+    useEffect(() => {
+        if (gameover && !savedToLeaderboard) {
+            const { won, players, seed, numPlayers, deckLength } = gameover;
+            
+            // Calculate total remaining cards
+            const remainingCards = calculateTotalRemainingCards(deckLength, players);
+            
+            // Save to leaderboard
+            saveToLeaderboard({
+                seed,
+                numPlayers,
+                remainingCards,
+                won
+            });
+            
+            setSavedToLeaderboard(true);
+        }
+    }, [gameover, savedToLeaderboard]);
 
     if (!gameover) {
         return null;
@@ -101,6 +124,13 @@ const GameOver = ({ gameover }) => {
                     >
                         Close & View Board
                     </Button>
+                </div>
+                
+                <div className="game-stats">
+                    <p>Game Seed: {gameover.seed}</p>
+                    <p>Players: {gameover.numPlayers}</p>
+                    <p>Total Cards Remaining: {calculateTotalRemainingCards(gameover.deckLength, gameover.players)}</p>
+                    <p className="leaderboard-note">This result has been saved to the leaderboard.</p>
                 </div>
             </div>
         </div>

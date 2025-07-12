@@ -6,6 +6,12 @@ interface Move {
   score?: number;
 }
 
+// Interface for game metadata
+export interface GameMetadata {
+  seed: number;
+  numPlayers: number;
+}
+
 const DECK_SIZE = 98;
 const GET_HAND_SIZE = (G, ctx) => {
   if (ctx.numPlayers === 1) return 8; // Single player gets 8 cards
@@ -128,8 +134,14 @@ const TheGame = {
   minPlayers: 1,
   maxPlayers: 5,
   playerView: PlayerView.STRIP_SECRETS,
-  //seed: 123,
-  setup: (ctx) => ({
+  setup: (ctx) => {
+    // Generate a random seed if one isn't provided through game config
+    // This will be a number between 1 and 1,000,000
+    const seed = (ctx as any)._random?.seed || Math.floor(Math.random() * 1000000) + 1;
+    
+    return {
+    // Store the seed for leaderboard purposes
+    seed: seed,
     deck: ctx.random.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)),
     piles: [1, 1, 100, 100],
     players: {
@@ -150,7 +162,8 @@ const TheGame = {
       },
     },
     turnMovesMade: 0
-  }),
+    };
+  },
 
   ai: {
     enumerate: (G, ctx) => {
@@ -257,7 +270,13 @@ const TheGame = {
 
   endIf: (G, ctx) => {
     if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
-      return { won: true, players: G.players }
+      return { 
+        won: true, 
+        players: G.players,
+        seed: G.seed,
+        numPlayers: ctx.numPlayers,
+        deckLength: G.deck.length
+      }
     }
 
     const minRequiredMoves = MinRequiredMoves(G, ctx);
@@ -265,14 +284,26 @@ const TheGame = {
     const currentPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[ctx.currentPlayer]);
 
     if (!currentPlayerHasValidMoves && movesMade < minRequiredMoves) {
-      return { won: false, players: G.players }
+      return { 
+        won: false, 
+        players: G.players,
+        seed: G.seed,
+        numPlayers: ctx.numPlayers,
+        deckLength: G.deck.length
+      }
     } else if (!currentPlayerHasValidMoves && movesMade >= minRequiredMoves) {
       // Validate that the next player has valid moves, otherwise end the game
       const nextPlayer = ctx.playOrder[(ctx.playOrderPos + 1) % ctx.numPlayers];
       const nextPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[nextPlayer]);
 
       if (!nextPlayerHasValidMoves) {
-        return { won: false, players: G.players }
+        return { 
+          won: false, 
+          players: G.players,
+          seed: G.seed,
+          numPlayers: ctx.numPlayers,
+          deckLength: G.deck.length
+        }
       }
     }
   },

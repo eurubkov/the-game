@@ -138,30 +138,30 @@ const TheGame = {
     // Generate a random seed if one isn't provided through game config
     // This will be a number between 1 and 1,000,000
     const seed = (ctx as any)._random?.seed || Math.floor(Math.random() * 1000000) + 1;
-    
+
     return {
-    // Store the seed for leaderboard purposes
-    seed: seed,
-    deck: ctx.random.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)),
-    piles: [1, 1, 100, 100],
-    players: {
-      "0": {
-        hand: []
+      // Store the seed for leaderboard purposes
+      seed: seed,
+      deck: ctx.random.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)),
+      piles: [1, 1, 100, 100],
+      players: {
+        "0": {
+          hand: []
+        },
+        "1": {
+          hand: []
+        },
+        "2": {
+          hand: []
+        },
+        "3": {
+          hand: []
+        },
+        "4": {
+          hand: []
+        },
       },
-      "1": {
-        hand: []
-      },
-      "2": {
-        hand: []
-      },
-      "3": {
-        hand: []
-      },
-      "4": {
-        hand: []
-      },
-    },
-    turnMovesMade: 0
+      turnMovesMade: 0
     };
   },
 
@@ -175,29 +175,12 @@ const TheGame = {
         for (const pile of [FIRST_UP, SECOND_UP, FIRST_DOWN, SECOND_DOWN]) {
           if (CanPlayCard(G, ctx, card, pile)) {
             const pileValue = G.piles[PILES_MAP[pile]];
-            let score = 0;
-            
-            // Calculate gap
-            let gap = 0;
-            if (UP_PILES.includes(pile)) {
-              gap = card - pileValue;
+            let score;
+            if (isTenJump(G, [card, pile])) {
+              score = 0; // Ten jumps get lowest score (most preferred)
             } else {
-              gap = pileValue - card;
+              score = Math.abs(card - pileValue); // Simple difference scoring
             }
-            
-            // Score based on gap size
-            if (gap === -10) {
-              score = 100; // 10-jumps are perfect
-            } else if (gap === 1) {
-              score = 90; // Consecutive plays are excellent
-            } else if (gap <= 3) {
-              score = 90 - gap * 10; // Small gaps are good
-            } else if (gap <= 10) {
-              score = 40 - gap * 3; // Medium gaps are okay
-            } else {
-              score = -gap; // Large gaps are bad
-            }
-            
             moves.push({ move: 'PlayCard', args: [card, pile], score });
           }
         }
@@ -205,29 +188,7 @@ const TheGame = {
 
       // 2. EndTurn when allowed
       if (G.turnMovesMade >= MinRequiredMoves(G, ctx)) {
-        // Give EndTurn a score based on the quality of remaining moves
-        let endTurnScore = 50; // Base score for ending turn
-        
-        const remainingMoves = moves.filter(m => m.move === 'PlayCard');
-        if (remainingMoves.length > 0) {
-          const scores = remainingMoves.map(m => m.score || 0);
-          const bestRemainingScore = Math.max(...scores);
-          
-          // Never end turn if there's an excellent move available (10-jump or consecutive)
-          if (bestRemainingScore >= 90) {
-            endTurnScore = 0; // Don't end turn
-          }
-          // If best remaining move is mediocre, prefer ending
-          else if (bestRemainingScore < 70) {
-            endTurnScore = 60;
-          }
-          // Otherwise, lean towards ending the turn
-          else {
-            endTurnScore = 60;
-          }
-        }
-        
-        moves.push({ move: 'EndTurn', score: endTurnScore });
+        moves.push({ move: 'EndTurn', score: 5 }); // Lower score to make it more preferred than large gaps
       }
 
       return moves;
@@ -239,14 +200,14 @@ const TheGame = {
         minimizeCards: {
           weight: 1000,
           checker: (G, ctx) => {
-            const totalCards = G.deck.length + 
+            const totalCards = G.deck.length +
               Object.values(G.players).reduce((sum, p: any) => sum + p.hand.length, 0);
-            
+
             // Reward states with fewer cards
             return totalCards === 0;
           }
         },
-        
+
         // Reward balanced pile progression
         balancedPiles: {
           weight: 70,
@@ -256,8 +217,8 @@ const TheGame = {
             const upRoom2 = 100 - G.piles[1];
             const downRoom1 = G.piles[2] - 1;
             const downRoom2 = G.piles[3] - 1;
-            
-            
+
+
             // Reward states where at least 2 piles have decent room
             const pileRooms = [upRoom1, upRoom2, downRoom1, downRoom2];
             const decentRooms = pileRooms.filter(room => room >= G.deck.length - 2);
@@ -270,8 +231,8 @@ const TheGame = {
 
   endIf: (G, ctx) => {
     if (G.deck.length === 0 && Object.keys(G.players).every(x => G.players[x].hand.length === 0)) {
-      return { 
-        won: true, 
+      return {
+        won: true,
         players: G.players,
         seed: G.seed,
         numPlayers: ctx.numPlayers,
@@ -284,8 +245,8 @@ const TheGame = {
     const currentPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[ctx.currentPlayer]);
 
     if (!currentPlayerHasValidMoves && movesMade < minRequiredMoves) {
-      return { 
-        won: false, 
+      return {
+        won: false,
         players: G.players,
         seed: G.seed,
         numPlayers: ctx.numPlayers,
@@ -297,8 +258,8 @@ const TheGame = {
       const nextPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[nextPlayer]);
 
       if (!nextPlayerHasValidMoves) {
-        return { 
-          won: false, 
+        return {
+          won: false,
           players: G.players,
           seed: G.seed,
           numPlayers: ctx.numPlayers,

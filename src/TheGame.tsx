@@ -290,6 +290,8 @@ const TheGame = {
       turn: {
         onBegin: (G, ctx) => {
           const startingPlayerID = determineStartingPlayer(G, ctx);
+          // Store the selected player ID in the game state
+          G.startingPlayerID = startingPlayerID;
           ctx.events?.endTurn({ next: startingPlayerID });
         },
         onEnd: (G, ctx) => {
@@ -312,6 +314,15 @@ const TheGame = {
         },
         onBegin: (G, ctx) => {
           G.turnMovesMade = 0;
+        },
+        order: {
+          // Custom turn order that starts with the selected player
+          first: (G) => {
+            return G.startingPlayerID ? parseInt(G.startingPlayerID) : 0;
+          },
+          next: (G, ctx) => {
+            return (ctx.playOrderPos + 1) % ctx.numPlayers;
+          }
         }
       },
       next: "playCardEmptyDeck"
@@ -325,6 +336,15 @@ const TheGame = {
         minMoves: 1, maxMoves: 7,
         onBegin: (G, ctx) => {
           G.turnMovesMade = 0;
+        },
+        // Maintain the same turn order as in the playCard phase
+        order: {
+          first: (G) => {
+            return G.startingPlayerID ? parseInt(G.startingPlayerID) : 0;
+          },
+          next: (G, ctx) => {
+            return (ctx.playOrderPos + 1) % ctx.numPlayers;
+          }
         }
       }
     }

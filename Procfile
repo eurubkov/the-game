@@ -1,1 +1,1 @@
-web: npx ts-node server.ts
+web: node -r esm server.ts

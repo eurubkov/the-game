@@ -83,6 +83,9 @@ export const CanPlayCard = (G, ctx, card, pile) => {
 export const MinRequiredMoves = (G, ctx) => {
   // In single-player mode, require only 1 move when the deck has cards
   // In multiplayer mode, require 2 moves when the deck has cards
+  if (!ctx.numPlayers) {
+    throw Error("Should have at least one player");
+  }
   if (ctx.numPlayers === 1) {
     return 1; // Single player always only needs to make 1 move
   }

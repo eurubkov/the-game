@@ -2,11 +2,10 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Client } from 'boardgame.io/react';
 import { Local } from 'boardgame.io/multiplayer';
-import { MCTSBot } from 'boardgame.io/ai';
 import CooperativeMCTSBot from './CooperativeMCTSBot';
 import TheGame from './TheGame';
 import LocalBoard from './LocalBoard';
-import { Button, Select, Form, InputNumber, Switch, Tooltip } from 'antd';
+import { Button, Form, InputNumber, Switch, Tooltip } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import './App.css';
 

@@ -6,7 +6,7 @@ import Leaderboard from "./Leaderboard";
 import { Client } from 'boardgame.io/react';
 import * as React from "react";
 import { useState } from "react";
-import { Button, Radio } from "antd";
+import { Button } from "antd";
 import './App.css';
 
 const AppClient = Client({

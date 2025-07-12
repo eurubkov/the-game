@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import { Button } from 'antd';
 import Card from './Card';
 import './GameOver.css';
@@ -22,12 +23,61 @@ const RemainingCards = ({ players }) => {
 };
 
 const GameOver = ({ gameover }) => {
+    const [isVisible, setIsVisible] = useState(true);
+    const [savedToLeaderboard, setSavedToLeaderboard] = useState(false);
+    
     const restartGame = () => {
         window.location.href = '/';
     };
+    
+    const closeOverlay = () => {
+        setIsVisible(false);
+    };
+    
+    // Reset visibility when game state changes
+    React.useEffect(() => {
+        if (gameover) {
+            setIsVisible(true);
+            setSavedToLeaderboard(false);
+        }
+    }, [gameover]);
+    
+    // Save game result to leaderboard when game ends
+    useEffect(() => {
+        if (gameover && !savedToLeaderboard) {
+            const { won, players, seed, numPlayers, deckLength } = gameover;
+            
+            // Calculate total remaining cards
+            const remainingCards = calculateTotalRemainingCards(deckLength, players);
+            
+            // Save to leaderboard
+            saveToLeaderboard({
+                seed,
+                numPlayers,
+                remainingCards,
+                won
+            });
+            
+            setSavedToLeaderboard(true);
+        }
+    }, [gameover, savedToLeaderboard]);
 
     if (!gameover) {
         return null;
+    }
+    
+    if (!isVisible) {
+        return (
+            <div className="game-over-minimized">
+                <Button 
+                    type="primary" 
+                    onClick={() => setIsVisible(true)}
+                    className="show-results-button"
+                >
+                    Show Game Results
+                </Button>
+            </div>
+        );
     }
 
     const isWin = gameover.won;
@@ -65,6 +115,14 @@ const GameOver = ({ gameover }) => {
                         className="play-again-button"
                     >
                         Play Again
+                    </Button>
+                    <Button 
+                        type="default" 
+                        size="large"
+                        onClick={closeOverlay}
+                        className="close-overlay-button"
+                    >
+                        Close & View Board
                     </Button>
                 </div>
                 

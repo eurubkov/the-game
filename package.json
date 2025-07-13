@@ -17,7 +17,7 @@
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
-    "boardgame.io": "^0.50.2",
+    "boardgame.io": "^0.49.12",
     "css-loader": "^6.8.1",
     "react-drag-drop-container": "^6.1.1",
     "react-scripts": "5.0.1",

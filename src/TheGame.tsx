@@ -129,7 +129,7 @@ const determineStartingPlayer = (G, ctx) => {
 const EndTurn = (G, ctx) => {
   // Check if the player has made the minimum required moves
   const minRequiredMoves = MinRequiredMoves(G, ctx);
-  if (G.turnMovesMade < minRequiredMoves) {
+  if (G.players[ctx.currentPlayer].hand.lengh > 0 && G.turnMovesMade < minRequiredMoves) {
     return INVALID_MOVE;
   }
   ctx.events?.endTurn();
@@ -193,7 +193,7 @@ const TheGame = {
       }
 
       // 2. EndTurn when allowed
-      if (G.turnMovesMade >= MinRequiredMoves(G, ctx)) {
+      if (G.turnMovesMade >= MinRequiredMoves(G, ctx) || (player.hand.length === 0 && G.deck.length === 0)) {
         moves.push({ move: 'EndTurn' });
       }
 

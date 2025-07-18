@@ -5,6 +5,13 @@ import Card from './Card';
 import './GameOver.css';
 import { saveToLeaderboard, calculateTotalRemainingCards } from './Leaderboard';
 
+// Define interface for GameOver props
+interface GameOverProps {
+    gameover: any;
+    onGameOver?: (result: any) => void;
+    playerID?: string;
+}
+
 const RemainingCards = ({ players }) => {
     return (
         <div className="remaining-cards">
@@ -22,7 +29,7 @@ const RemainingCards = ({ players }) => {
     );
 };
 
-const GameOver = ({ gameover }) => {
+const GameOver: React.FC<GameOverProps> = ({ gameover, onGameOver, playerID }) => {
     const [isVisible, setIsVisible] = useState(true);
     const [savedToLeaderboard, setSavedToLeaderboard] = useState(false);
     
@@ -50,22 +57,39 @@ const GameOver = ({ gameover }) => {
     // Save game result to leaderboard when game ends
     useEffect(() => {
         if (gameover && !savedToLeaderboard) {
-            const { won, players, seed, numPlayers, deckLength } = gameover;
-            
-            // Calculate total remaining cards
-            const remainingCards = calculateTotalRemainingCards(deckLength, players);
-            
-            // Save to leaderboard
-            saveToLeaderboard({
-                seed,
-                numPlayers,
-                remainingCards,
-                won
-            });
-            
-            setSavedToLeaderboard(true);
+            try {
+                const { won, players, seed, numPlayers, deckLength } = gameover;
+                
+                // Calculate total remaining cards
+                const remainingCards = calculateTotalRemainingCards(deckLength, players);
+                
+                // Save to leaderboard
+                saveToLeaderboard({
+                    seed,
+                    numPlayers,
+                    remainingCards,
+                    won
+                });
+                
+                setSavedToLeaderboard(true);
+                
+                // Call onGameOver callback if provided (for bot test mode)
+                // Use setTimeout to ensure this happens after the current execution context
+                // This helps prevent Socket.IO related errors
+                if (onGameOver && typeof onGameOver === 'function') {
+                    setTimeout(() => {
+                        try {
+                            onGameOver(gameover);
+                        } catch (error) {
+                            console.error("Error in onGameOver callback:", error);
+                        }
+                    }, 0);
+                }
+            } catch (error) {
+                console.error("Error processing game over:", error);
+            }
         }
-    }, [gameover, savedToLeaderboard]);
+    }, [gameover, savedToLeaderboard, onGameOver]);
 
     if (!gameover) {
         return null;
@@ -106,8 +130,12 @@ const GameOver = ({ gameover }) => {
                 
                 <p className="game-over-message">
                     {isWin 
-                        ? 'Congratulations! You successfully played all cards and beat The Game!' 
-                        : 'You were unable to play the required number of cards. Better luck next time!'}
+                        ? (playerID === "observer" 
+                            ? 'The bots successfully played all cards and beat The Game!' 
+                            : 'Congratulations! You successfully played all cards and beat The Game!')
+                        : (playerID === "observer"
+                            ? 'The bots were unable to play the required number of cards.'
+                            : 'You were unable to play the required number of cards. Better luck next time!')}
                 </p>
                 
                 {!isWin && <RemainingCards players={gameover.players} />}

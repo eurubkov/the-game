@@ -67,8 +67,12 @@ const SinglePlayerApp: React.FC = () => {
     setGameStarted(false);
     // Use setTimeout to ensure component is fully unmounted before setting GameClient to null
     setTimeout(() => {
-      setGameClient(null);
-    }, 0);
+      try {
+        setGameClient(null);
+      } catch (error) {
+        console.error("Error cleaning up game client:", error);
+      }
+    }, 100); // Slightly longer timeout to ensure proper cleanup
   };
 
   if (gameStarted && GameClient) {
@@ -130,7 +134,7 @@ const SinglePlayerApp: React.FC = () => {
           <Form.Item label="Seed Value">
             <InputNumber 
               min={1} 
-              max={999999} 
+              max={9999999} 
               value={customSeed} 
               onChange={(value) => setCustomSeed(value as number)} 
               style={{ width: '100%' }}

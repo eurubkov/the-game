@@ -20,9 +20,14 @@ const LocalBoard = (props) => {
             const numPlayers = props.ctx.numPlayers;
             const customMatchData = [...defaultMatchData];
             
-            // If we have a playerID, mark the current player as "You"
-            if (props.playerID !== undefined && props.playerID !== null) {
+            // If we have a playerID and it's not "observer", mark the current player as "You"
+            if (props.playerID !== undefined && props.playerID !== null && props.playerID !== "observer") {
                 customMatchData[parseInt(props.playerID)].name = 'You';
+            } else if (props.playerID === "observer") {
+                // In observer mode (bot test), rename all players to "Bot X"
+                for (let i = 0; i < numPlayers; i++) {
+                    customMatchData[i].name = `Bot ${i + 1}`;
+                }
             }
             
             // Update match data based on the number of players

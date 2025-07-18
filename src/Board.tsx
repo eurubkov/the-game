@@ -54,6 +54,7 @@ interface GameBoardProps {
     playerID: string;
     matchData: MatchData[];
     undo: () => void;
+    onGameOver?: (result: any) => void;
 }
 
 /**
@@ -78,7 +79,9 @@ const PILE_TYPE_MAP: Record<number, PileType> = {
 const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerID, ...props }) => {
     const [showInvalidMove, setShowInvalidMove] = useState(false);
     const currentPlayerName = props.matchData[ctx.currentPlayer].name;
-    const isCurrentPlayer = ctx.currentPlayer === playerID;
+    // In observer mode, we're not a player
+    const isObserver = playerID === "observer";
+    const isCurrentPlayer = !isObserver && ctx.currentPlayer === playerID;
     
     const onEndTurn = () => {
         events.endTurn();
@@ -176,8 +179,20 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
      * Render player's hand with draggable cards using modern array methods
      */
     const renderHand = () => {
+        // If we're in observer mode, show the current player's hand
+        const handPlayerID = isObserver ? ctx.currentPlayer : playerID;
         const isDraggable = isCurrentPlayer;
-        const playerHand = G.players[playerID].hand;
+        
+        // Check if the player exists and has a hand
+        if (!G.players[handPlayerID] || !G.players[handPlayerID].hand) {
+            return (
+                <div className="cards-container">
+                    <div className="no-cards-message">No cards available</div>
+                </div>
+            );
+        }
+        
+        const playerHand = G.players[handPlayerID].hand;
         
         const handCards = playerHand.map((handValue, index) => (
             <div key={index} className="card-wrapper">
@@ -289,11 +304,55 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
             )}
             
             <div className="hand-container">
-                <h3 className="hand-label">Your Hand</h3>
+                <h3 className="hand-label">
+                    {isObserver 
+                        ? `${props.matchData[ctx.currentPlayer].name}'s Hand` 
+                        : "Your Hand"}
+                </h3>
                 {renderHand()}
             </div>
             
-            <GameOver gameover={ctx.gameover}/>
+            {/* Wrap GameOver in error boundary to prevent Socket.IO errors from crashing the app */}
+            {(() => {
+                try {
+                    return (
+                        <GameOver 
+                            gameover={ctx.gameover} 
+                            onGameOver={props.onGameOver ? 
+                                (result) => {
+                                    if (result && props.onGameOver) {
+                                        // Delay the callback to avoid Socket.IO issues
+                                        setTimeout(() => {
+                                            try {
+                                                // Check again that onGameOver is defined before calling it
+                                                if (props.onGameOver) {
+                                                    props.onGameOver(result);
+                                                }
+                                            } catch (error) {
+                                                console.error("Error in onGameOver callback:", error);
+                                            }
+                                        }, 0);
+                                    }
+                                } : undefined
+                            }
+                            playerID={playerID}
+                        />
+                    );
+                } catch (error) {
+                    console.error("Error rendering GameOver component:", error);
+                    return (
+                        <div className="game-over-error">
+                            <h2>{ctx.gameover?.won ? "Victory!" : "Game Over"}</h2>
+                            <Button 
+                                type="primary" 
+                                onClick={() => window.location.href = '/'}
+                            >
+                                Return to Menu
+                            </Button>
+                        </div>
+                    );
+                }
+            })()}
             {renderActionButtons()}
             {renderGameRules()}
         </div>

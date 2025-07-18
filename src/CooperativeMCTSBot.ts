@@ -8,7 +8,7 @@ import { MCTSBot } from 'boardgame.io/ai';
  */
 class CooperativeMCTSBot extends MCTSBot {
   constructor(opts) {
-    super({ ...opts, ...opts.game.ai, iterations: 25000, playoutDepth: 100 });
+    super({ ...opts, ...opts.game.ai, iterations: 15000, playoutDepth: 100 });
   }
 }
 

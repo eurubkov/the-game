@@ -2,6 +2,7 @@ import LobbyView from "./LobbyView";
 import TheGame from './TheGame';
 import LocalBoard from "./LocalBoard";
 import SinglePlayerApp from "./SinglePlayerApp";
+import BotTestApp from "./BotTestApp";
 import Leaderboard from "./Leaderboard";
 import { Client } from 'boardgame.io/react';
 import * as React from "react";
@@ -22,7 +23,8 @@ enum GameMode {
     SELECTION = 'selection',
     SINGLE_PLAYER = 'single_player',
     MULTIPLAYER = 'multiplayer',
-    LEADERBOARD = 'leaderboard'
+    LEADERBOARD = 'leaderboard',
+    BOT_TEST = 'bot_test'
 }
 
 const App = () => {
@@ -60,6 +62,14 @@ const App = () => {
                             Multiplayer
                         </Button>
                         <Button 
+                            type="primary" 
+                            size="large"
+                            onClick={() => setGameMode(GameMode.BOT_TEST)}
+                            style={{ margin: '10px' }}
+                        >
+                            Bot Test Mode
+                        </Button>
+                        <Button 
                             type="default" 
                             size="large"
                             onClick={() => setGameMode(GameMode.LEADERBOARD)}
@@ -84,6 +94,21 @@ const App = () => {
                     Back to Mode Selection
                 </Button>
                 <SinglePlayerApp />
+            </div>
+        );
+    }
+
+    // Bot Test mode
+    if (gameMode === GameMode.BOT_TEST) {
+        return (
+            <div className="App">
+                <Button 
+                    onClick={() => setGameMode(GameMode.SELECTION)} 
+                    style={{ margin: '10px' }}
+                >
+                    Back to Mode Selection
+                </Button>
+                <BotTestApp />
             </div>
         );
     }

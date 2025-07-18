@@ -59,7 +59,9 @@ const PlayCard = (G, ctx, card, pile) => {
   }
   G.players[ctx.currentPlayer].hand.splice(cardIndex, 1);
   G.piles[PILES_MAP[pile]] = parseInt(card);
-  G.turnMovesMade++;
+
+  // Track how many cards the current player has played this turn
+  G.turnMovesMade = (G.turnMovesMade || 0) + 1;
 }
 
 export const CanPlayCard = (G, ctx, card, pile) => {
@@ -147,8 +149,8 @@ const TheGame = {
     return {
       // Store the seed for leaderboard purposes
       seed: seed,
-      deck: ctx.random?.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)) || 
-            Array.from({ length: DECK_SIZE }, (v, i) => i + 2), // Fallback if random is undefined
+      deck: ctx.random?.Shuffle(Array.from({ length: DECK_SIZE }, (v, i) => i + 2)) ||
+        Array.from({ length: DECK_SIZE }, (v, i) => i + 2), // Fallback if random is undefined
       piles: [1, 1, 100, 100],
       players: {
         "0": {
@@ -175,26 +177,24 @@ const TheGame = {
     enumerate: (G, ctx) => {
       const moves: Move[] = [];
       const player = G.players[ctx.currentPlayer];
-
-      // 1. Every PlayCard with scoring
+      
+      // 1. Every PlayCard with simple scoring
       for (const card of player.hand) {
         for (const pile of [FIRST_UP, SECOND_UP, FIRST_DOWN, SECOND_DOWN]) {
           if (CanPlayCard(G, ctx, card, pile)) {
-            const pileValue = G.piles[PILES_MAP[pile]];
-            let score;
-            if (isTenJump(G, [card, pile])) {
-              score = 0; // Ten jumps get lowest score (most preferred)
-            } else {
-              score = Math.abs(card - pileValue); // Simple difference scoring
-            }
-            moves.push({ move: 'PlayCard', args: [card, pile], score });
+            // Simple scoring - let the MCTS algorithm figure out the best moves
+            // based on the objectives
+            moves.push({ 
+              move: 'PlayCard', 
+              args: [card, pile]
+            });
           }
         }
       }
 
       // 2. EndTurn when allowed
       if (G.turnMovesMade >= MinRequiredMoves(G, ctx)) {
-        moves.push({ move: 'EndTurn', score: 5 }); // Lower score to make it more preferred than large gaps
+        moves.push({ move: 'EndTurn' });
       }
 
       return moves;
@@ -202,80 +202,111 @@ const TheGame = {
 
     // @ts-ignore - The 'objectives' property is used by boardgame.io but not in the type definitions
     objectives: (G, ctx) => {
+      const totalCards =
+        G.deck.length + Object.values(G.players).reduce((s: number, p: any) => s + p.hand.length, 0);
+      
+      // Calculate pile playability metrics
+      const upPilePlayability = [
+        100 - G.piles[0], // Cards playable on first up pile
+        100 - G.piles[1]  // Cards playable on second up pile
+      ];
+      
+      const downPilePlayability = [
+        G.piles[2] - 1,  // Cards playable on first down pile
+        G.piles[3] - 1   // Cards playable on second down pile
+      ];
+      
+      // Calculate total playable cards across all piles
+      const totalPlayableCards = upPilePlayability.reduce((a, b) => a + b, 0) + 
+                                downPilePlayability.reduce((a, b) => a + b, 0);
+      
       return {
         // Primary goal: minimize total cards remaining
-        minimizeCards: {
-          weight: 1000,
-          checker: (G, ctx) => {
-            const totalCards = G.deck.length +
-              Object.values(G.players).reduce((sum, p: any) => sum + p.hand.length, 0);
-
-            // Reward states with fewer cards
-            return totalCards === 0;
+        victory: {
+          weight: 50_000, // Highest priority on winning
+          checker: () => totalCards === 0,
+        },
+        // Reward maximizing playable cards
+        maximizePlayability: {
+          weight: 3000,
+          checker: () => {
+            // This objective is met when the total playable cards is high relative to cards remaining
+            return totalPlayableCards >= totalCards * 2;
           }
-        } as any,
-
-        // Reward balanced pile progression
-        balancedPiles: {
-          weight: 70,
-          checker: (G, ctx) => {
-            // Calculate how much "room" each pile has left
-            const upRoom1 = 100 - G.piles[0];
-            const upRoom2 = 100 - G.piles[1];
-            const downRoom1 = G.piles[2] - 1;
-            const downRoom2 = G.piles[3] - 1;
-
-
-            // Reward states where at least 2 piles have decent room
-            const pileRooms = [upRoom1, upRoom2, downRoom1, downRoom2];
-            const decentRooms = pileRooms.filter(room => room >= G.deck.length - 2);
-            return decentRooms.length >= 2;
+        },
+        
+        // Reward having good pile spacing
+        pileSpacing: {
+          weight: 1500,
+          checker: () => {
+            // Good spacing means the piles of the same type are not too close together
+            const upPileSpacing = Math.abs(G.piles[0] - G.piles[1]);
+            const downPileSpacing = Math.abs(G.piles[2] - G.piles[3]);
+            return (upPileSpacing >= 10 && downPileSpacing >= 10);
           }
-        }
+        },
+
       };
     }
   } as any,
 
   endIf: (G, ctx) => {
-    if (!ctx) {
-      return;
-    }
-    if (G.deck && G.deck.length === 0 && G.players && Object.keys(G.players).every(x => G.players[x] && G.players[x].hand && G.players[x].hand.length === 0)) {
-      return {
-        won: true,
-        players: G.players,
-        seed: G.seed,
-        numPlayers: ctx.numPlayers,
-        deckLength: G.deck.length
+    try {
+      if (!ctx) {
+        return null;
       }
-    }
-
-    const minRequiredMoves = MinRequiredMoves(G, ctx);
-    const movesMade = G.turnMovesMade;
-    const currentPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[ctx.currentPlayer]);
-
-    if (!currentPlayerHasValidMoves && movesMade < minRequiredMoves) {
-      return {
-        won: false,
-        players: G.players,
-        seed: G.seed,
-        numPlayers: ctx.numPlayers,
-        deckLength: G.deck.length
-      }
-    } else if (!currentPlayerHasValidMoves && movesMade >= minRequiredMoves) {
-      // Validate that the next player has valid moves, otherwise end the game
-      const nextPlayer = ctx.playOrder[(ctx.playOrderPos + 1) % ctx.numPlayers];
-      const nextPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[nextPlayer]);
-
-      if (!nextPlayerHasValidMoves) {
+      
+      // Create a safe game result object with default values
+      const createSafeGameResult = (won = false) => {
         return {
-          won: false,
-          players: G.players,
-          seed: G.seed,
-          numPlayers: ctx.numPlayers,
-          deckLength: G.deck.length
+          won,
+          players: G?.players || {},
+          seed: G?.seed || 0,
+          numPlayers: ctx?.numPlayers || 1,
+          deckLength: G?.deck?.length || 0
+        };
+      };
+      
+      // Check for win condition - all cards played
+      if (G?.deck && G.deck.length === 0 && G?.players && 
+          Object.keys(G.players).every(x => 
+            G.players[x] && G.players[x].hand && G.players[x].hand.length === 0)) {
+        return createSafeGameResult(true);
+      }
+
+      // Check for loss conditions
+      if (!G || !ctx.currentPlayer || !G.players || !G.players[ctx.currentPlayer]) {
+        return null;
+      }
+      
+      const minRequiredMoves = MinRequiredMoves(G, ctx);
+      const movesMade = G.turnMovesMade || 0;
+      const currentPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[ctx.currentPlayer]);
+
+      if (!currentPlayerHasValidMoves && movesMade < minRequiredMoves) {
+        return createSafeGameResult(false);
+      } else if (!currentPlayerHasValidMoves && movesMade >= minRequiredMoves) {
+        // Validate that the next player has valid moves, otherwise end the game
+        if (!ctx.playOrder || ctx.playOrderPos === undefined) {
+          return null;
+        }
+        
+        const nextPlayer = ctx.playOrder[(ctx.playOrderPos + 1) % ctx.numPlayers];
+        if (!G.players[nextPlayer]) {
+          return null;
+        }
+        
+        const nextPlayerHasValidMoves = HasValidMoves(G, ctx, G.players[nextPlayer]);
+
+        if (!nextPlayerHasValidMoves) {
+          return createSafeGameResult(false);
         }
       }
+      
+      return null;
+    } catch (error) {
+      console.error("Error in endIf function:", error);
+      return null;
     }
   },
 
@@ -356,12 +387,6 @@ const TheGame = {
     }
   }
 };
-
-export function isTenJump(G, [card, pile]) {
-  const pileVal = G.piles[PILES_MAP[pile]];
-  return (UP_PILES.includes(pile) && pileVal - card === 10) ||
-    (DOWN_PILES.includes(pile) && card - pileVal === 10);
-}
 
 // Use a two-step type assertion to force TypeScript to accept our implementation
 // First cast to unknown, then to Game to bypass type checking

@@ -250,7 +250,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                 <Button 
                     className="primary-button"
                     type="primary" 
-                    disabled={G.turnMovesMade < MinRequiredMoves(G, ctx) || !isCurrentPlayer} 
+                    disabled={(G.players[ctx.currentPlayer] && G.players[ctx.currentPlayer].hand.length > 0 && G.turnMovesMade < MinRequiredMoves(G, ctx)) || !isCurrentPlayer} 
                     onClick={onEndTurn}
                 >
                     End Turn

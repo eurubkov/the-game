@@ -109,7 +109,7 @@ const SinglePlayerApp: React.FC = () => {
           <div style={{ padding: '8px 0', color: '#666' }}>
             {numBots <= 0 ? 
               "You will play alone (single-player mode)" : 
-              `${numBots} ${numBots === 1 ? 'bot' : 'bots'} will play against you`
+              `${numBots} ${numBots === 1 ? 'bot' : 'bots'} will play with you`
             }
           </div>
         </Form.Item>

@@ -231,7 +231,7 @@ const TheGame = {
           weight: 3000,
           checker: () => {
             // This objective is met when the total playable cards is high relative to cards remaining
-            return totalPlayableCards >= totalCards * 2;
+            return totalPlayableCards >= Math.max(totalCards * 3.8, 98);
           }
         },
         

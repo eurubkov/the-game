@@ -351,10 +351,6 @@ const TheGame = {
         },
         onBegin: (G, ctx) => {
           G.turnMovesMade = 0;
-          if (G.deck.length === 0 && G.players[ctx.currentPlayer].hand.length === 0) {
-            G.turnMovesMade = 2;
-            ctx.events?.endTurn();
-          }
         },
         order: {
           // Custom turn order that starts with the selected player
@@ -377,6 +373,10 @@ const TheGame = {
         minMoves: 1, maxMoves: 7,
         onBegin: (G, ctx) => {
           G.turnMovesMade = 0;
+          if (G.deck.length === 0 && G.players[ctx.currentPlayer].hand.length === 0) {
+            G.turnMovesMade = 2;
+            ctx.events?.endTurn();
+          }
         },
         // Maintain the same turn order as in the playCard phase
         order: {

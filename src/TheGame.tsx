@@ -370,7 +370,7 @@ const TheGame = {
         EndTurn
       },
       turn: {
-        minMoves: 1, maxMoves: 7,
+        minMoves: 0, maxMoves: 7,
         onBegin: (G, ctx) => {
           G.turnMovesMade = 0;
           if (G.deck.length === 0 && G.players[ctx.currentPlayer].hand.length === 0) {

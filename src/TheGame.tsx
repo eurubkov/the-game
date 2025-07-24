@@ -338,19 +338,22 @@ const TheGame = {
       next: "playCard"
     },
     playCard: {
-      endIf: (G, ctx) => (G.deck.length === 0),
       moves: {
         PlayCard,
         EndTurn
       },
       turn: {
-        minMoves: 1, // Set to 1 for all player counts, we'll enforce the 2-move minimum for multiplayer in the EndTurn move
+        minMoves: 0,
         maxMoves: 7,
         onEnd: (G, ctx) => {
           Replenish(G, ctx);
         },
         onBegin: (G, ctx) => {
           G.turnMovesMade = 0;
+          if (G.deck.length === 0 && G.players[ctx.currentPlayer].hand.length === 0) {
+            G.turnMovesMade = 2;
+            ctx.events?.endTurn();
+          }
         },
         order: {
           // Custom turn order that starts with the selected player
@@ -361,35 +364,8 @@ const TheGame = {
             return (ctx.playOrderPos + 1) % ctx.numPlayers;
           }
         }
-      },
-      next: "playCardEmptyDeck"
-    },
-    playCardEmptyDeck: {
-      moves: {
-        PlayCard,
-        EndTurn
-      },
-      turn: {
-        minMoves: 0, maxMoves: 7,
-        onBegin: (G, ctx) => {
-          G.turnMovesMade = 0;
-          if (G.deck.length === 0 && G.players[ctx.currentPlayer].hand.length === 0) {
-            G.turnMovesMade = 2;
-            ctx.events?.endTurn();
-          }
-        },
-        // Maintain the same turn order as in the playCard phase
-        order: {
-          first: (G) => {
-            return G.startingPlayerID ? parseInt(G.startingPlayerID) : 0;
-          },
-          next: (G, ctx) => {
-            return (ctx.playOrderPos + 1) % ctx.numPlayers;
-          }
-        }
       }
-    }
-  }
+    }}
 };
 
 // Use a two-step type assertion to force TypeScript to accept our implementation

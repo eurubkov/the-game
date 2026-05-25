@@ -2,6 +2,35 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Deployment
+
+The frontend is configured for Netlify in `netlify.toml`:
+
+- Build command: `npm run build`
+- Publish directory: `build`
+- Node version: `22`
+
+The multiplayer server is separate from Netlify. The current default backend URL is:
+
+```text
+https://the-game-100-4h5s.onrender.com
+```
+
+That URL is used by `src/LobbyView.tsx`, which can be overridden for frontend builds with:
+
+```text
+REACT_APP_GAME_SERVER_URL=https://your-server.example.com
+```
+
+The backend entrypoint is `server.ts`, and `Procfile` runs it as a web process. The server reads:
+
+```text
+PORT=8000
+CLIENT_ORIGINS=https://thegame100.netlify.app
+```
+
+`CLIENT_ORIGINS` accepts a comma-separated list of allowed frontend origins.
+
 ## Available Scripts
 
 In the project directory, you can run:

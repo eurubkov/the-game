@@ -41,7 +41,11 @@ const createSinglePlayerClient = (numPlayers: number, numBots: number, customSee
   });
 };
 
-const SinglePlayerApp: React.FC = () => {
+interface SinglePlayerAppProps {
+  onBackToMode?: () => void;
+}
+
+const SinglePlayerApp: React.FC<SinglePlayerAppProps> = ({ onBackToMode }) => {
   // Total players includes you (human) + bots
   const [totalPlayers, setTotalPlayers] = useState(2);
   const [gameStarted, setGameStarted] = useState(false);
@@ -78,12 +82,16 @@ const SinglePlayerApp: React.FC = () => {
   if (gameStarted && GameClient) {
     return (
       <div className="single-player-container">
-        <Button 
-          onClick={handleBackToSetup} 
-          className="back-button"
-        >
-          Back to Setup
-        </Button>
+        <div className="mode-toolbar">
+          {onBackToMode && (
+            <Button onClick={onBackToMode}>
+              Mode Selection
+            </Button>
+          )}
+          <Button onClick={handleBackToSetup}>
+            Back to Setup
+          </Button>
+        </div>
         <GameClient playerID="0" />
       </div>
     );
@@ -91,6 +99,11 @@ const SinglePlayerApp: React.FC = () => {
 
   return (
     <div className="single-player-setup">
+      {onBackToMode && (
+        <Button onClick={onBackToMode} className="setup-back-button">
+          Back to Mode Selection
+        </Button>
+      )}
       <h1>The Game - Single Player Setup</h1>
       <Form layout="vertical" className="setup-form">
         <Form.Item label="Total Players (you + bots)">

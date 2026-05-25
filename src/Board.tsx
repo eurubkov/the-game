@@ -13,7 +13,7 @@ interface GameState {
     piles: number[];
     players: {
         [key: string]: {
-            hand: number[];
+            hand: Array<number | null>;
         };
     };
     turnMovesMade: number;
@@ -88,8 +88,8 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
     const isObserver = playerID === "observer";
     const isCurrentPlayer = !isObserver && ctx.currentPlayer === playerID;
     const handPlayerID = isObserver ? ctx.currentPlayer : playerID;
-    const visibleHand = useMemo(
-        () => G.players[handPlayerID]?.hand || EMPTY_HAND,
+    const visibleHand = useMemo<number[]>(
+        () => (G.players[handPlayerID]?.hand || EMPTY_HAND).filter((card): card is number => typeof card === "number"),
         [G.players, handPlayerID]
     );
     const currentPlayerHand = G.players[ctx.currentPlayer]?.hand || [];
@@ -365,6 +365,52 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
             </div>
         </div>
     );
+
+    const renderPlayerOverview = () => {
+        const playerIDs = (ctx.playOrder || Object.keys(G.players)).slice(0, ctx.numPlayers);
+
+        return (
+            <section className="players-overview" aria-label="Players and cards remaining">
+                {playerIDs.map(id => {
+                    const handCount = G.players[id]?.hand?.length || 0;
+                    const shownBacks = Math.min(handCount, 8);
+                    const isActivePlayer = id === ctx.currentPlayer;
+                    const isSelf = !isObserver && id === playerID;
+                    const playerName = isSelf
+                        ? "You"
+                        : props.matchData[id]?.name || `Player ${Number(id) + 1}`;
+
+                    return (
+                        <div
+                            key={id}
+                            className={`player-summary ${isActivePlayer ? "active-player-summary" : ""}`}
+                        >
+                            <div className="player-summary-name">{playerName}</div>
+                            <div className="player-card-stack" aria-hidden="true">
+                                {shownBacks > 0 ? (
+                                    Array.from({ length: shownBacks }).map((_, index) => (
+                                        <span
+                                            key={index}
+                                            className="mini-card-back"
+                                            style={{
+                                                left: `${index * 8}px`,
+                                                transform: `rotate(${(index - (shownBacks - 1) / 2) * 2.4}deg)`
+                                            }}
+                                        />
+                                    ))
+                                ) : (
+                                    <span className="player-empty-hand" />
+                                )}
+                            </div>
+                            <div className="player-card-count">
+                                {handCount} {handCount === 1 ? "card" : "cards"}
+                            </div>
+                        </div>
+                    );
+                })}
+            </section>
+        );
+    };
     
     /**
      * Render the action buttons
@@ -421,7 +467,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
             {renderHeader()}
             {renderTurnIndicator()}
             {renderStatusStrip()}
-            {renderActionButtons()}
+            {renderPlayerOverview()}
             {renderPiles()}
             
             {showInvalidMove && (
@@ -437,6 +483,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
                         : selectedCard !== null ? `Your Hand: ${selectedCard} selected` : "Your Hand"}
                 </h3>
                 {renderHand()}
+                {renderActionButtons()}
             </div>
             
             {/* Wrap GameOver in error boundary to prevent Socket.IO errors from crashing the app */}

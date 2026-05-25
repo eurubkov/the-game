@@ -83,13 +83,7 @@ const App = () => {
     if (gameMode === GameMode.SINGLE_PLAYER) {
         return (
             <div className="App">
-                <Button 
-                    onClick={() => setGameMode(GameMode.SELECTION)} 
-                    className="back-button"
-                >
-                    Back to Mode Selection
-                </Button>
-                <SinglePlayerApp />
+                <SinglePlayerApp onBackToMode={() => setGameMode(GameMode.SELECTION)} />
             </div>
         );
     }
@@ -98,13 +92,7 @@ const App = () => {
     if (gameMode === GameMode.BOT_TEST) {
         return (
             <div className="App">
-                <Button 
-                    onClick={() => setGameMode(GameMode.SELECTION)} 
-                    className="back-button"
-                >
-                    Back to Mode Selection
-                </Button>
-                <BotTestApp />
+                <BotTestApp onBackToMode={() => setGameMode(GameMode.SELECTION)} />
             </div>
         );
     }

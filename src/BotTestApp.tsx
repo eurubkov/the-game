@@ -80,9 +80,10 @@ const GameResult = ({ result, onNewGame }) => {
 
 interface BotTestAppProps {
   initialGameResult?: any;
+  onBackToMode?: () => void;
 }
 
-const BotTestApp: React.FC<BotTestAppProps> = ({ initialGameResult = null }) => {
+const BotTestApp: React.FC<BotTestAppProps> = ({ initialGameResult = null, onBackToMode }) => {
   // State for game configuration
   const [numBots, setNumBots] = useState(2);
   const [gameStarted, setGameStarted] = useState(false);
@@ -150,12 +151,16 @@ const BotTestApp: React.FC<BotTestAppProps> = ({ initialGameResult = null }) => 
   if (gameResult) {
     return (
       <div className="bot-test-container">
-        <Button 
-          onClick={handleBackToSetup} 
-          className="back-button"
-        >
-          Back to Setup
-        </Button>
+        <div className="mode-toolbar">
+          {onBackToMode && (
+            <Button onClick={onBackToMode}>
+              Mode Selection
+            </Button>
+          )}
+          <Button onClick={handleBackToSetup}>
+            Back to Setup
+          </Button>
+        </div>
         <GameResult result={gameResult} onNewGame={handleStartGame} />
       </div>
     );
@@ -165,11 +170,13 @@ const BotTestApp: React.FC<BotTestAppProps> = ({ initialGameResult = null }) => 
   if (gameStarted && GameClient) {
     return (
       <div className="bot-test-container">
-        <div className="bot-test-controls">
-          <Button 
-            onClick={handleBackToSetup} 
-            className="back-button"
-          >
+        <div className="mode-toolbar">
+          {onBackToMode && (
+            <Button onClick={onBackToMode}>
+              Mode Selection
+            </Button>
+          )}
+          <Button onClick={handleBackToSetup}>
             Back to Setup
           </Button>
         </div>
@@ -201,6 +208,11 @@ const BotTestApp: React.FC<BotTestAppProps> = ({ initialGameResult = null }) => 
   // Setup screen
   return (
     <div className="bot-test-setup">
+      {onBackToMode && (
+        <Button onClick={onBackToMode} className="setup-back-button">
+          Back to Mode Selection
+        </Button>
+      )}
       <h1>The Game - Bot Test Mode</h1>
       <p className="setup-description">
         In this mode, only bots will play the game. You can observe how they perform with different settings.

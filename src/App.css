@@ -52,6 +52,18 @@
   margin: var(--spacing-md);
 }
 
+.mode-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: min(100% - 2rem, 1180px);
+  margin: var(--spacing-sm) auto 0;
+}
+
+.setup-back-button {
+  margin-bottom: var(--spacing-md);
+}
+
 .lobby-status {
   width: min(100% - 2rem, 520px);
   margin: var(--spacing-xl) auto;
@@ -218,6 +230,70 @@
   white-space: nowrap;
 }
 
+.players-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.player-summary {
+  min-width: 0;
+  padding: var(--spacing-sm);
+  background-color: rgba(255, 253, 248, 0.78);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-color);
+}
+
+.active-player-summary {
+  border-color: rgba(47, 111, 94, 0.5);
+  box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.08);
+}
+
+.player-summary-name {
+  margin-bottom: var(--spacing-xs);
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-card-stack {
+  position: relative;
+  height: 34px;
+  width: 92px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.mini-card-back {
+  position: absolute;
+  top: 0;
+  width: 22px;
+  height: 32px;
+  border-radius: 4px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.18) 0 24%, transparent 24% 76%, rgba(255, 253, 248, 0.18) 76%),
+    #40566f;
+  border: 1px solid rgba(35, 32, 29, 0.2);
+  box-shadow: var(--shadow-sm);
+  transform-origin: bottom center;
+}
+
+.player-empty-hand {
+  display: block;
+  width: 38px;
+  height: 32px;
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+}
+
+.player-card-count {
+  color: var(--text-muted-color);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .piles-container {
   display: grid;
   grid-template-columns: repeat(2, minmax(280px, 1fr));
@@ -362,7 +438,7 @@
   display: flex;
   justify-content: center;
   gap: var(--spacing-sm);
-  margin: 0 0 var(--spacing-lg);
+  margin-top: var(--spacing-md);
 }
 
 .actions-container .ant-btn {
@@ -472,6 +548,11 @@
     margin: var(--spacing-sm);
   }
 
+  .mode-toolbar {
+    width: calc(100% - 1rem);
+    margin-top: var(--spacing-sm);
+  }
+
   .game-container {
     padding: var(--spacing-sm);
   }
@@ -517,8 +598,28 @@
     font-size: 0.95rem;
   }
 
-  .actions-container {
+  .players-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-xs);
     margin-bottom: var(--spacing-sm);
+  }
+
+  .player-summary {
+    padding: var(--spacing-xs);
+  }
+
+  .player-card-stack {
+    height: 28px;
+    width: 72px;
+  }
+
+  .mini-card-back {
+    width: 18px;
+    height: 26px;
+  }
+
+  .actions-container {
+    margin-top: var(--spacing-sm);
   }
 
   .piles-container {
@@ -601,6 +702,16 @@
 
   .actions-container .ant-btn {
     width: 100%;
+    padding-inline: var(--spacing-sm);
+  }
+
+  .mode-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mode-toolbar .ant-btn {
+    min-width: 0;
     padding-inline: var(--spacing-sm);
   }
 

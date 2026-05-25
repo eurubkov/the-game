@@ -380,6 +380,48 @@ describe('board status rendering', () => {
     expect(screen.getByRole('button', { name: /end turn/i })).toBeEnabled();
   });
 
+  test('shows player hand counts and keeps action buttons under the hand cards', () => {
+    const { container } = render(
+      <TheGameBoard
+        G={createG({
+          players: createPlayers({
+            '0': [10, 30, 90],
+            '1': [null, null, null, null]
+          }),
+          turnMovesMade: 2
+        })}
+        ctx={{
+          currentPlayer: '0',
+          playOrder: ['0', '1'],
+          numPlayers: 2
+        }}
+        moves={{
+          PlayCard: jest.fn(),
+          EndTurn: jest.fn()
+        }}
+        events={{ endTurn: jest.fn() }}
+        playerID="0"
+        matchData={[{ id: '0', name: 'You' }, { id: '1', name: 'Friend' }]}
+        undo={jest.fn()}
+      />
+    );
+
+    const playerOverview = screen.getByLabelText(/players and cards remaining/i);
+    expect(playerOverview).toHaveTextContent(/you/i);
+    expect(playerOverview).toHaveTextContent(/3 cards/i);
+    expect(playerOverview).toHaveTextContent(/friend/i);
+    expect(playerOverview).toHaveTextContent(/4 cards/i);
+
+    const handContainer = container.querySelector('.hand-container');
+    const cardsContainer = container.querySelector('.cards-container');
+    const actionsContainer = container.querySelector('.actions-container');
+
+    expect(handContainer).toContainElement(actionsContainer);
+    expect(
+      cardsContainer.compareDocumentPosition(actionsContainer) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
   test('plays a selected hand card by tapping a valid pile', async () => {
     const user = userEvent.setup();
     const PlayCard = jest.fn();

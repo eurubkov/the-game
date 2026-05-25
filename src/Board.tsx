@@ -126,6 +126,10 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
         Object.values(INDEX_TO_PILE_MAP).some(pile => CanPlayCard(G, ctx, card, pile))
     );
 
+    const handLabelText = isObserver
+        ? `${props.matchData[ctx.currentPlayer].name}'s Hand`
+        : selectedCard !== null ? `Your Hand: ${selectedCard} selected` : "Your Hand";
+
     const playCardOnPile = (card: number, pile: string) => {
         if (!isCurrentPlayer || !CanPlayCard(G, ctx, card, pile)) {
             showInvalidMoveToast();
@@ -476,11 +480,12 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
                 </div>
             )}
             
-            <div className="hand-container">
+            <div className={`hand-container ${isCurrentPlayer ? "active-hand-container" : ""}`}>
                 <h3 className="hand-label">
-                    {isObserver 
-                        ? `${props.matchData[ctx.currentPlayer].name}'s Hand` 
-                        : selectedCard !== null ? `Your Hand: ${selectedCard} selected` : "Your Hand"}
+                    <span>{handLabelText}</span>
+                    {isCurrentPlayer && (
+                        <span className="hand-turn-badge">Your turn</span>
+                    )}
                 </h3>
                 {renderHand()}
                 {renderActionButtons()}

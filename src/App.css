@@ -409,17 +409,41 @@
   background-color: rgba(255, 253, 248, 0.72);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
-.your-turn .hand-container {
-  border-color: rgba(47, 111, 94, 0.5);
-  box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.08);
+.active-hand-container {
+  background-color: rgba(245, 251, 246, 0.94);
+  border-color: rgba(47, 111, 94, 0.78);
+  box-shadow:
+    0 0 0 3px rgba(47, 111, 94, 0.16),
+    0 12px 28px rgba(35, 32, 29, 0.08);
 }
 
 .hand-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
   font-weight: 800;
   margin-bottom: var(--spacing-md);
   color: var(--text-color);
+}
+
+.active-hand-container .hand-label {
+  color: #255d4f;
+}
+
+.hand-turn-badge {
+  padding: 0.1rem 0.45rem;
+  color: var(--success-color);
+  background-color: rgba(47, 111, 94, 0.12);
+  border: 1px solid rgba(47, 111, 94, 0.22);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .cards-container {

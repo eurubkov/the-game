@@ -422,6 +422,42 @@ describe('board status rendering', () => {
     ).toBeTruthy();
   });
 
+  test('highlights your hand only while it is your turn', () => {
+    const boardProps = (currentPlayer) => ({
+      G: createG({
+        players: createPlayers({
+          '0': [10, 30, 90],
+          '1': [40, 41]
+        }),
+        turnMovesMade: 0
+      }),
+      ctx: {
+        currentPlayer,
+        playOrder: ['0', '1'],
+        numPlayers: 2
+      },
+      moves: {
+        PlayCard: jest.fn(),
+        EndTurn: jest.fn()
+      },
+      events: { endTurn: jest.fn() },
+      playerID: '0',
+      matchData: [{ id: '0', name: 'You' }, { id: '1', name: 'Friend' }],
+      undo: jest.fn()
+    });
+
+    const { container, rerender } = render(<TheGameBoard {...boardProps('0')} />);
+    const getHandContainer = () => container.querySelector('.hand-container');
+
+    expect(getHandContainer()).toHaveClass('active-hand-container');
+    expect(container.querySelector('.hand-turn-badge')).toHaveTextContent(/your turn/i);
+
+    rerender(<TheGameBoard {...boardProps('1')} />);
+
+    expect(getHandContainer()).not.toHaveClass('active-hand-container');
+    expect(container.querySelector('.hand-turn-badge')).toBeNull();
+  });
+
   test('plays a selected hand card by tapping a valid pile', async () => {
     const user = userEvent.setup();
     const PlayCard = jest.fn();

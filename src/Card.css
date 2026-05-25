@@ -96,6 +96,12 @@
     transform: translateY(-2px);
 }
 
+@media (pointer: coarse) {
+    .active-hand-container .draggable {
+        touch-action: none;
+    }
+}
+
 .dragging {
     opacity: 0.88;
     transform: translateY(-8px) !important;

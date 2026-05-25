@@ -391,6 +391,15 @@
   box-shadow: 0 0 0 4px rgba(194, 138, 44, 0.16);
 }
 
+.touch-drop-target {
+  transform: translateY(-3px);
+}
+
+.invalid-drop-target {
+  outline-color: var(--error-color);
+  box-shadow: 0 0 0 4px rgba(176, 71, 71, 0.14);
+}
+
 .drop-target:hover {
   transform: translateY(-2px);
 }
@@ -467,6 +476,19 @@
 
 .actions-container .ant-btn {
   min-height: 44px;
+}
+
+.touch-drag-ghost {
+  position: fixed;
+  z-index: 2000;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1.05);
+  opacity: 0.96;
+}
+
+.touch-drag-ghost .card {
+  margin: 0;
+  box-shadow: var(--shadow-lg);
 }
 
 .primary-button {

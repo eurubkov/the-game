@@ -3,7 +3,7 @@ import { MinRequiredMoves, CanPlayCard } from "./TheGame";
 import Card from "./Card";
 import GameOver from "./GameOver";
 import { Button } from 'antd';
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Type definitions for the game state and props
@@ -58,6 +58,17 @@ interface GameBoardProps {
     onGameOver?: (result: any) => void;
 }
 
+interface PointerDragState {
+    card: number;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    x: number;
+    y: number;
+    isDragging: boolean;
+    targetPileIndex: number | null;
+}
+
 /**
  * Pile type mapping
  */
@@ -78,11 +89,16 @@ const PILE_TYPE_MAP: Record<number, PileType> = {
 };
 
 const EMPTY_HAND: number[] = [];
+const POINTER_DRAG_THRESHOLD = 8;
 
 const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...props }) => {
     const [showInvalidMove, setShowInvalidMove] = useState(false);
     const [draggedCard, setDraggedCard] = useState<number | null>(null);
     const [selectedCard, setSelectedCard] = useState<number | null>(null);
+    const [pointerDrag, setPointerDrag] = useState<PointerDragState | null>(null);
+    const pointerDragRef = useRef<PointerDragState | null>(null);
+    const suppressNextCardClickRef = useRef(false);
+    const clickSuppressTimeoutRef = useRef<number | null>(null);
     const currentPlayerName = props.matchData[ctx.currentPlayer]?.name || `Player ${Number(ctx.currentPlayer) + 1}`;
     // In observer mode, we're not a player
     const isObserver = playerID === "observer";
@@ -95,11 +111,28 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
     const currentPlayerHand = G.players[ctx.currentPlayer]?.hand || [];
     const minRequiredMoves = MinRequiredMoves(G, ctx);
     const cardsStillRequired = Math.max(minRequiredMoves - (G.turnMovesMade || 0), 0);
-    const activeCard = draggedCard ?? selectedCard;
+    const activeCard = pointerDrag?.isDragging ? pointerDrag.card : draggedCard ?? selectedCard;
+
+    const setPointerDragState = (nextState: PointerDragState | null) => {
+        pointerDragRef.current = nextState;
+        setPointerDrag(nextState);
+    };
+
+    const suppressNextCardClick = () => {
+        suppressNextCardClickRef.current = true;
+        if (clickSuppressTimeoutRef.current !== null) {
+            window.clearTimeout(clickSuppressTimeoutRef.current);
+        }
+        clickSuppressTimeoutRef.current = window.setTimeout(() => {
+            suppressNextCardClickRef.current = false;
+            clickSuppressTimeoutRef.current = null;
+        }, 350);
+    };
 
     useEffect(() => {
         setDraggedCard(null);
         setSelectedCard(null);
+        setPointerDragState(null);
     }, [ctx.currentPlayer, playerID]);
 
     useEffect(() => {
@@ -107,6 +140,12 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
             setSelectedCard(null);
         }
     }, [selectedCard, visibleHand]);
+
+    useEffect(() => () => {
+        if (clickSuppressTimeoutRef.current !== null) {
+            window.clearTimeout(clickSuppressTimeoutRef.current);
+        }
+    }, []);
 
     const showInvalidMoveToast = () => {
         setShowInvalidMove(true);
@@ -142,6 +181,11 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
     };
 
     const onCardTap = (card: number) => {
+        if (suppressNextCardClickRef.current) {
+            suppressNextCardClickRef.current = false;
+            return;
+        }
+
         if (!isCurrentPlayer) return;
 
         if (!canPlayOnAnyPile(card)) {
@@ -181,6 +225,121 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault(); // This is necessary to allow dropping
     };
+
+    const getPileIndexAtPoint = (x: number, y: number) => {
+        const element = document.elementFromPoint(x, y);
+        const pileTarget = element?.closest?.("[data-pile-index]");
+        if (!(pileTarget instanceof HTMLElement)) return null;
+
+        const pileIndex = Number(pileTarget.dataset.pileIndex);
+        return Number.isInteger(pileIndex) ? pileIndex : null;
+    };
+
+    const releasePointerCapture = (
+        target: HTMLDivElement & {
+            hasPointerCapture?: (pointerId: number) => boolean;
+            releasePointerCapture?: (pointerId: number) => void;
+        },
+        pointerId: number
+    ) => {
+        try {
+            if (target.hasPointerCapture?.(pointerId)) {
+                target.releasePointerCapture?.(pointerId);
+            }
+        } catch {
+            // Some test and browser environments expose partial pointer capture APIs.
+        }
+    };
+
+    const onCardPointerDown = (e: React.PointerEvent<HTMLDivElement>, card: number) => {
+        if (!isCurrentPlayer || e.pointerType === "mouse" || e.isPrimary === false) return;
+        if (typeof e.button === "number" && e.button !== 0) return;
+
+        const target = e.currentTarget as HTMLDivElement & {
+            setPointerCapture?: (pointerId: number) => void;
+        };
+
+        try {
+            target.setPointerCapture?.(e.pointerId);
+        } catch {
+            // Pointer capture is a convenience for the drag path, not a requirement.
+        }
+
+        setPointerDragState({
+            card,
+            pointerId: e.pointerId,
+            startX: e.clientX,
+            startY: e.clientY,
+            x: e.clientX,
+            y: e.clientY,
+            isDragging: false,
+            targetPileIndex: null
+        });
+    };
+
+    const onCardPointerMove = (e: React.PointerEvent<HTMLDivElement>, card: number) => {
+        const currentDrag = pointerDragRef.current;
+        if (!currentDrag || currentDrag.card !== card || currentDrag.pointerId !== e.pointerId) return;
+
+        const distance = Math.hypot(e.clientX - currentDrag.startX, e.clientY - currentDrag.startY);
+        const isDragging = currentDrag.isDragging || distance > POINTER_DRAG_THRESHOLD;
+
+        if (!isDragging) {
+            setPointerDragState({
+                ...currentDrag,
+                x: e.clientX,
+                y: e.clientY
+            });
+            return;
+        }
+
+        e.preventDefault();
+        suppressNextCardClick();
+
+        if (!currentDrag.isDragging) {
+            setDraggedCard(currentDrag.card);
+            setSelectedCard(null);
+        }
+
+        setPointerDragState({
+            ...currentDrag,
+            x: e.clientX,
+            y: e.clientY,
+            isDragging: true,
+            targetPileIndex: getPileIndexAtPoint(e.clientX, e.clientY)
+        });
+    };
+
+    const onCardPointerUp = (e: React.PointerEvent<HTMLDivElement>, card: number) => {
+        const currentDrag = pointerDragRef.current;
+        if (!currentDrag || currentDrag.card !== card || currentDrag.pointerId !== e.pointerId) return;
+
+        releasePointerCapture(e.currentTarget, e.pointerId);
+
+        if (currentDrag.isDragging) {
+            e.preventDefault();
+            suppressNextCardClick();
+
+            const pileIndex = currentDrag.targetPileIndex ?? getPileIndexAtPoint(e.clientX, e.clientY);
+            if (pileIndex !== null) {
+                playCardOnPile(currentDrag.card, INDEX_TO_PILE_MAP[pileIndex]);
+            }
+
+            setDraggedCard(null);
+            setSelectedCard(null);
+        }
+
+        setPointerDragState(null);
+    };
+
+    const onCardPointerCancel = (e: React.PointerEvent<HTMLDivElement>, card: number) => {
+        const currentDrag = pointerDragRef.current;
+        if (!currentDrag || currentDrag.card !== card || currentDrag.pointerId !== e.pointerId) return;
+
+        releasePointerCapture(e.currentTarget, e.pointerId);
+        setPointerDragState(null);
+        setDraggedCard(null);
+    };
     
     /**
      * Create a pile element with the appropriate styling and drop target
@@ -188,10 +347,14 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
     const createPileElement = (index: number, value: number, pileType: PileType) => {
         const pile = INDEX_TO_PILE_MAP[index];
         const isValidDropTarget = activeCard !== null && CanPlayCard(G, ctx, activeCard, pile);
+        const isPointerTarget = pointerDrag?.isDragging && pointerDrag.targetPileIndex === index;
+        const isInvalidPointerTarget = isPointerTarget && activeCard !== null && !isValidDropTarget;
         const dropClassName = [
             "drop-target",
             activeCard !== null ? "drop-target-active" : "",
-            isValidDropTarget ? "valid-drop-target" : ""
+            isValidDropTarget ? "valid-drop-target" : "",
+            isPointerTarget ? "touch-drop-target" : "",
+            isInvalidPointerTarget ? "invalid-drop-target" : ""
         ].filter(Boolean).join(" ");
         const pileLetter = index % 2 === 0 ? 'A' : 'B';
         const pileDirection = pileType === 'up' ? 'Ascending' : 'Descending';
@@ -214,6 +377,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
             </div>
             <div 
                 className={dropClassName}
+                data-pile-index={index}
                 role="button"
                 tabIndex={selectedCard !== null ? 0 : -1}
                 aria-disabled={!isCurrentPlayer || selectedCard === null}
@@ -310,6 +474,10 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
                         onClick={isDraggable ? () => onCardTap(handValue) : undefined}
                         onDragStartCard={() => setDraggedCard(handValue)}
                         onDragEndCard={() => setDraggedCard(null)}
+                        onPointerDown={isDraggable ? (e: React.PointerEvent<HTMLDivElement>) => onCardPointerDown(e, handValue) : undefined}
+                        onPointerMove={isDraggable ? (e: React.PointerEvent<HTMLDivElement>) => onCardPointerMove(e, handValue) : undefined}
+                        onPointerUp={isDraggable ? (e: React.PointerEvent<HTMLDivElement>) => onCardPointerUp(e, handValue) : undefined}
+                        onPointerCancel={isDraggable ? (e: React.PointerEvent<HTMLDivElement>) => onCardPointerCancel(e, handValue) : undefined}
                     />
                 </div>
             );
@@ -477,6 +645,19 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...pr
             {showInvalidMove && (
                 <div className="invalid-move-alert">
                     Invalid move! Try another card or pile.
+                </div>
+            )}
+
+            {pointerDrag?.isDragging && (
+                <div
+                    className="touch-drag-ghost"
+                    style={{
+                        left: pointerDrag.x,
+                        top: pointerDrag.y
+                    }}
+                    aria-hidden="true"
+                >
+                    <Card value={pointerDrag.card} id={`touch-drag-${pointerDrag.card}`} />
                 </div>
             )}
             

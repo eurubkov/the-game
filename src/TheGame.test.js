@@ -337,6 +337,24 @@ describe('boardgame.io reducer endgame integration', () => {
 });
 
 describe('board status rendering', () => {
+  const firePointer = (element, type, options) => {
+    const event = new MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      clientX: options.clientX,
+      clientY: options.clientY,
+      button: options.button || 0
+    });
+
+    Object.defineProperties(event, {
+      pointerId: { value: options.pointerId || 1 },
+      pointerType: { value: options.pointerType || 'touch' },
+      isPrimary: { value: options.isPrimary !== false }
+    });
+
+    fireEvent(element, event);
+  };
+
   const renderBoard = (G) => {
     render(
       <TheGameBoard
@@ -456,6 +474,122 @@ describe('board status rendering', () => {
 
     expect(getHandContainer()).not.toHaveClass('active-hand-container');
     expect(container.querySelector('.hand-turn-badge')).toBeNull();
+  });
+
+  test('plays a hand card by touch dragging it onto a valid pile', () => {
+    const PlayCard = jest.fn();
+    const originalElementFromPoint = document.elementFromPoint;
+
+    try {
+      render(
+        <TheGameBoard
+          G={createG({
+            piles: [20, 25, 80, 75],
+            players: createPlayers({ '0': [30, 90] }),
+            turnMovesMade: 0
+          })}
+          ctx={{
+            currentPlayer: '0',
+            playOrder: ['0'],
+            numPlayers: 1
+          }}
+          moves={{
+            PlayCard,
+            EndTurn: jest.fn()
+          }}
+          events={{ endTurn: jest.fn() }}
+          playerID="0"
+          matchData={[{ id: '0', name: 'You' }]}
+          undo={jest.fn()}
+        />
+      );
+
+      const card = screen.getByLabelText('Hand card 30');
+      const pile = screen.getByLabelText(/ascending pile A/i);
+      document.elementFromPoint = jest.fn(() => pile);
+
+      firePointer(card, 'pointerdown', {
+        pointerId: 1,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: 120,
+        clientY: 700
+      });
+      firePointer(card, 'pointermove', {
+        pointerId: 1,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: 120,
+        clientY: 540
+      });
+
+      expect(pile).toHaveClass('touch-drop-target');
+
+      firePointer(card, 'pointerup', {
+        pointerId: 1,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: 120,
+        clientY: 540
+      });
+
+      expect(PlayCard).toHaveBeenCalledWith(30, FIRST_UP);
+    } finally {
+      document.elementFromPoint = originalElementFromPoint;
+    }
+  });
+
+  test('keeps mouse pointer movement on the native desktop drag path', () => {
+    const PlayCard = jest.fn();
+
+    render(
+      <TheGameBoard
+        G={createG({
+          players: createPlayers({ '0': [30, 90] }),
+          turnMovesMade: 0
+        })}
+        ctx={{
+          currentPlayer: '0',
+          playOrder: ['0'],
+          numPlayers: 1
+        }}
+        moves={{
+          PlayCard,
+          EndTurn: jest.fn()
+        }}
+        events={{ endTurn: jest.fn() }}
+        playerID="0"
+        matchData={[{ id: '0', name: 'You' }]}
+        undo={jest.fn()}
+      />
+    );
+
+    const card = screen.getByLabelText('Hand card 30');
+
+    firePointer(card, 'pointerdown', {
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
+      clientX: 120,
+      clientY: 700
+    });
+    firePointer(card, 'pointermove', {
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
+      clientX: 120,
+      clientY: 540
+    });
+    firePointer(card, 'pointerup', {
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
+      clientX: 120,
+      clientY: 540
+    });
+
+    expect(document.querySelector('.touch-drag-ghost')).toBeNull();
+    expect(PlayCard).not.toHaveBeenCalled();
   });
 
   test('plays a selected hand card by tapping a valid pile', async () => {

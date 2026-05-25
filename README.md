@@ -20,7 +20,10 @@ That URL is used by `src/LobbyView.tsx`, which can be overridden for frontend bu
 
 ```text
 REACT_APP_GAME_SERVER_URL=https://your-server.example.com
+REACT_APP_LOBBY_SERVER_URL=/api
 ```
+
+`REACT_APP_GAME_SERVER_URL` is used for the Socket.IO game connection. `REACT_APP_LOBBY_SERVER_URL` is used for lobby HTTP requests like `/games`; Netlify proxies `/api/*` to the Render backend to avoid browser CORS failures when Render returns edge-level responses.
 
 The backend entrypoint is `server.ts`, and `Procfile` runs it as a web process. The server reads:
 

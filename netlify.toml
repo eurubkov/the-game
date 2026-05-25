@@ -4,3 +4,10 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  REACT_APP_LOBBY_SERVER_URL = "/api"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://the-game-100-4h5s.onrender.com/:splat"
+  status = 200
+  force = true

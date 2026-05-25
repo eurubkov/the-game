@@ -52,6 +52,31 @@
   margin: var(--spacing-md);
 }
 
+.lobby-status {
+  width: min(100% - 2rem, 520px);
+  margin: var(--spacing-xl) auto;
+  padding: var(--spacing-lg);
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-color);
+  text-align: center;
+}
+
+.lobby-status h2 {
+  margin-bottom: var(--spacing-sm);
+}
+
+.lobby-status p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.lobby-status-error {
+  color: var(--error-color);
+  font-weight: 700;
+}
+
 .single-player-setup,
 .bot-test-setup {
   width: min(100% - 2rem, 560px);

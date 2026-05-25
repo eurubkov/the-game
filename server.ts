@@ -8,7 +8,8 @@ const configuredOrigins = (process.env.CLIENT_ORIGINS || "https://thegame100.net
 
 const server = Server({
     games: [TheGame],
-    origins: [Origins.LOCALHOST, Origins.LOCALHOST_IN_DEVELOPMENT, ...configuredOrigins]
+    origins: [Origins.LOCALHOST, Origins.LOCALHOST_IN_DEVELOPMENT, ...configuredOrigins],
+    apiOrigins: [Origins.LOCALHOST, Origins.LOCALHOST_IN_DEVELOPMENT, ...configuredOrigins]
 });
 const PORT = parseInt(process.env.PORT || '8000', 10);
 

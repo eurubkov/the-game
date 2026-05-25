@@ -5,51 +5,43 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-}
-
-.bot-test-setup {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-md);
 }
 
 .setup-description {
   text-align: center;
-  margin-bottom: 20px;
-  color: #666;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-muted-color);
 }
 
 .bot-test-controls {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
 }
 
 .game-result-card {
   width: 100%;
   max-width: 500px;
-  margin: 20px auto;
+  margin: var(--spacing-lg) auto;
   text-align: center;
 }
 
 .game-result-details {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin: 20px 0;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-lg) 0;
+}
+
+.result-action-button {
+  margin-top: var(--spacing-md);
 }
 
 .game-client-wrapper {
@@ -58,23 +50,21 @@
   min-height: 400px;
 }
 
-
-/* No cards message */
 .no-cards-message {
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
+  padding: var(--spacing-lg);
+  background-color: var(--surface-muted-color);
+  border-radius: var(--border-radius-lg);
   text-align: center;
-  color: #666;
+  color: var(--text-muted-color);
   font-style: italic;
-  margin: 10px 0;
-  border: 1px dashed #ccc;
+  margin: var(--spacing-sm) 0;
+  border: 1px dashed var(--border-color);
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .bot-test-controls {
     flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
 }

@@ -1,72 +1,73 @@
 :root {
-  /* Color Palette */
-  --primary-color: #3a86ff;
-  --secondary-color: #ff006e;
-  --accent-color: #ffbe0b;
-  --background-color: #f8f9fa;
-  --card-color-1: #3a86ff;
-  --card-color-2: #ff006e;
-  --text-color: #212529;
-  --text-light: #f8f9fa;
-  --success-color: #38b000;
-  --error-color: #d90429;
-  --neutral-color: #8d99ae;
-  
-  /* Spacing */
+  --primary-color: #2f6f5e;
+  --secondary-color: #8b3f4d;
+  --accent-color: #c28a2c;
+  --background-color: #f4f1ea;
+  --surface-color: #fffdf8;
+  --surface-muted-color: #ebe5da;
+  --card-color-1: #2f6f5e;
+  --card-color-2: #8b3f4d;
+  --text-color: #23201d;
+  --text-muted-color: #6f675f;
+  --text-light: #fffdf8;
+  --success-color: #2f6f5e;
+  --error-color: #b23a48;
+  --neutral-color: #77736b;
+  --border-color: #d8d0c4;
+
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2.5rem;
-  
-  /* Border Radius */
+
   --border-radius-sm: 0.25rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 1rem;
-  --border-radius-xl: 2rem;
-  
-  /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.2);
+  --border-radius-md: 0.375rem;
+  --border-radius-lg: 0.5rem;
+  --border-radius-xl: 0.5rem;
+
+  --shadow-sm: 0 1px 2px rgba(35, 32, 29, 0.08);
+  --shadow-md: 0 4px 12px rgba(35, 32, 29, 0.12);
+  --shadow-lg: 0 10px 24px rgba(35, 32, 29, 0.16);
+  --shadow-xl: 0 16px 36px rgba(35, 32, 29, 0.22);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+  background-color: var(--background-color);
+}
+
 body {
   margin: 0;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-color);
   color: var(--text-color);
-  line-height: 1.6;
+  line-height: 1.5;
+  overscroll-behavior-y: none;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-/* Modern Button Styles */
 button {
   cursor: pointer;
   font-weight: 600;
-  padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--border-radius-md);
-  border: none;
-  transition: all 0.2s ease-in-out;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
   font-family: inherit;
 }
 
 button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 button:active {
@@ -74,36 +75,39 @@ button:active {
 }
 
 button:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* Container styles */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-md);
 }
 
-/* Responsive typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin-top: 0;
   line-height: 1.2;
 }
 
 h1 {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-size: 2.25rem;
 }
 
 h2 {
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: 1.5rem;
 }
 
 h3 {
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-size: 1.125rem;
 }
 
-/* Utility classes */
 .text-center {
   text-align: center;
 }
@@ -145,6 +149,3 @@ h3 {
 .mb-md {
   margin-bottom: var(--spacing-md);
 }
-
-/* Import Google Font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');

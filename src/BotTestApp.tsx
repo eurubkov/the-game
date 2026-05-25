@@ -71,14 +71,18 @@ const GameResult = ({ result, onNewGame }) => {
         <Text>Cards Left in Deck: {result.deckLength}</Text>
         <Text strong>Total Cards Left: {totalCardsLeft}</Text>
       </div>
-      <Button type="primary" onClick={onNewGame} style={{ marginTop: '20px' }}>
+      <Button type="primary" onClick={onNewGame} className="result-action-button">
         Start New Game
       </Button>
     </Card>
   );
 };
 
-const BotTestApp: React.FC = () => {
+interface BotTestAppProps {
+  initialGameResult?: any;
+}
+
+const BotTestApp: React.FC<BotTestAppProps> = ({ initialGameResult = null }) => {
   // State for game configuration
   const [numBots, setNumBots] = useState(2);
   const [gameStarted, setGameStarted] = useState(false);
@@ -86,7 +90,7 @@ const BotTestApp: React.FC = () => {
   const [useCustomSeed, setUseCustomSeed] = useState(false);
   const [customSeed, setCustomSeed] = useState<number | null>(null);
   // Always auto-play in bot test mode
-  const [gameResult, setGameResult] = useState<any>(null);
+  const [gameResult, setGameResult] = useState<any>(initialGameResult);
   const [gameKey, setGameKey] = useState(0); // Used to force remount of game component
 
   // Function to start a new game
@@ -111,6 +115,7 @@ const BotTestApp: React.FC = () => {
   // Function to handle back to setup
   const handleBackToSetup = () => {
     setGameStarted(false);
+    setGameResult(null);
     setTimeout(() => {
       setGameClient(null);
     }, 0);
@@ -147,7 +152,7 @@ const BotTestApp: React.FC = () => {
       <div className="bot-test-container">
         <Button 
           onClick={handleBackToSetup} 
-          style={{ margin: '10px' }}
+          className="back-button"
         >
           Back to Setup
         </Button>
@@ -163,7 +168,7 @@ const BotTestApp: React.FC = () => {
         <div className="bot-test-controls">
           <Button 
             onClick={handleBackToSetup} 
-            style={{ margin: '10px' }}
+            className="back-button"
           >
             Back to Setup
           </Button>
@@ -200,7 +205,7 @@ const BotTestApp: React.FC = () => {
       <p className="setup-description">
         In this mode, only bots will play the game. You can observe how they perform with different settings.
       </p>
-      <Form layout="vertical" style={{ maxWidth: '400px', margin: '0 auto' }}>
+      <Form layout="vertical" className="setup-form">
         <Form.Item label="Number of Bots">
           <InputNumber 
             min={1} 
@@ -211,7 +216,7 @@ const BotTestApp: React.FC = () => {
               setNumBots(newValue);
             }} 
           />
-          <div style={{ padding: '8px 0', color: '#666' }}>
+          <div className="setup-help">
             {numBots} {numBots === 1 ? 'bot' : 'bots'} will play the game
           </div>
         </Form.Item>
@@ -221,7 +226,7 @@ const BotTestApp: React.FC = () => {
             <span>
               Use Custom Seed 
               <Tooltip title="Using a custom seed allows you to replay the same game configuration. Games with the same seed and player count will have the same card distribution.">
-                <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+                <QuestionCircleOutlined className="help-icon" />
               </Tooltip>
             </span>
           }
@@ -239,10 +244,10 @@ const BotTestApp: React.FC = () => {
               max={9999999} 
               value={customSeed} 
               onChange={(value) => setCustomSeed(value as number)} 
-              style={{ width: '100%' }}
+              className="full-width-control"
               placeholder="Enter a number to use as seed"
             />
-            <div style={{ padding: '8px 0', color: '#666', fontSize: '0.9em' }}>
+            <div className="setup-help setup-help-small">
               Use the same seed to test different bot configurations on identical games
             </div>
           </Form.Item>

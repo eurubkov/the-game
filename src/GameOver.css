@@ -13,7 +13,7 @@
 }
 
 .game-over-modal {
-    background-color: white;
+    background-color: var(--surface-color);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-xl);
     max-width: 90%;
@@ -27,13 +27,11 @@
 }
 
 .game-over-modal.win {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border: 3px solid var(--success-color);
+    border: 2px solid var(--success-color);
 }
 
 .game-over-modal.lose {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e0eafc 100%);
-    border: 3px solid var(--error-color);
+    border: 2px solid var(--error-color);
 }
 
 .game-over-title {
@@ -68,10 +66,10 @@
 .game-stats {
     margin-top: var(--spacing-lg);
     padding: var(--spacing-md);
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--surface-muted-color);
     border-radius: var(--border-radius-md);
     text-align: left;
-    border-left: 4px solid #1890ff;
+    border-left: 4px solid var(--accent-color);
 }
 
 .game-stats p {
@@ -82,7 +80,7 @@
 .leaderboard-note {
     margin-top: var(--spacing-sm);
     font-style: italic;
-    color: #52c41a;
+    color: var(--success-color);
     text-align: center;
 }
 
@@ -136,7 +134,7 @@
     max-height: 40vh;
     overflow-y: auto;
     padding: var(--spacing-md);
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: var(--surface-muted-color);
     border-radius: var(--border-radius-md);
 }
 

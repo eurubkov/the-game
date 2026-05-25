@@ -8,6 +8,13 @@ interface CardProps {
     isDraggable?: boolean;
     isPile?: boolean;
     pileType?: 'up' | 'down';
+    isPlayable?: boolean;
+    isSelectable?: boolean;
+    isSelected?: boolean;
+    onDragStartCard?: (value: number) => void;
+    onDragEndCard?: (value: number) => void;
+    onClick?: React.MouseEventHandler<HTMLDivElement>;
+    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
     style?: React.CSSProperties;
     [key: string]: any;
 }
@@ -18,6 +25,13 @@ const Card: React.FC<CardProps> = ({
     isDraggable = false, 
     isPile = false,
     pileType,
+    isPlayable = false,
+    isSelectable = false,
+    isSelected = false,
+    onDragStartCard,
+    onDragEndCard,
+    onClick,
+    onKeyDown,
     ...props 
 }) => {
     // Create a ref to the card element
@@ -38,9 +52,8 @@ const Card: React.FC<CardProps> = ({
         if (cardRef.current) {
             cardRef.current.classList.add("dragging");
         }
-        
-        // Log which card is being dragged
-        console.log(`Dragging card ${value}`);
+
+        onDragStartCard?.(value);
     };
     
     // Handle drag end event
@@ -49,33 +62,50 @@ const Card: React.FC<CardProps> = ({
         if (cardRef.current) {
             cardRef.current.classList.remove("dragging");
         }
+        onDragEndCard?.(value);
     };
-    // Determine card color based on pile type or default to blue for hand cards
-    const getCardColor = () => {
-        if (isPile) {
-            return pileType === 'up' ? 'var(--card-color-1)' : 'var(--card-color-2)';
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (onClick && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
         }
-        return 'var(--card-color-1)';
+
+        onKeyDown?.(e);
     };
 
     // Determine if the card is a special value (like deck count)
-    const isSpecialCard = value > 100 || value < 1;
+    const isSpecialCard = value > 100 || value < 1 || id === 'deck';
+    const isInteractive = Boolean(onClick);
+    const className = [
+        'card',
+        isDraggable ? 'draggable' : '',
+        isPlayable ? 'playable-card' : '',
+        isSelectable ? 'selectable-card' : '',
+        isSelected ? 'selected-card' : '',
+        isPile ? 'pile' : '',
+        pileType ? `pile-${pileType}` : '',
+        isSpecialCard ? 'special-card' : ''
+    ].filter(Boolean).join(' ');
 
     return (
         <div 
             ref={cardRef}
             id={id.toString()} 
-            className={`card ${isDraggable ? 'draggable' : ''} ${isPile ? 'pile' : ''}`}
+            className={className}
             style={{
-                backgroundColor: isSpecialCard ? 'var(--neutral-color)' : getCardColor(),
-                cursor: isDraggable ? 'grab' : 'default',
                 ...props.style
             }}
             data-card-value={value}
             data-card-type={isPile ? (pileType || 'none') : 'hand'}
             draggable={isDraggable}
+            role={isInteractive ? "button" : undefined}
+            tabIndex={isInteractive ? 0 : undefined}
+            aria-pressed={isInteractive ? isSelected : undefined}
             onDragStart={isDraggable ? handleDragStart : undefined}
             onDragEnd={isDraggable ? handleDragEnd : undefined}
+            onClick={onClick}
+            onKeyDown={isInteractive ? handleKeyDown : onKeyDown}
             {...props}
         >
             <div className="card-corners">

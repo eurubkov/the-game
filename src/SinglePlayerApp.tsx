@@ -80,7 +80,7 @@ const SinglePlayerApp: React.FC = () => {
       <div className="single-player-container">
         <Button 
           onClick={handleBackToSetup} 
-          style={{ margin: '10px' }}
+          className="back-button"
         >
           Back to Setup
         </Button>
@@ -92,7 +92,7 @@ const SinglePlayerApp: React.FC = () => {
   return (
     <div className="single-player-setup">
       <h1>The Game - Single Player Setup</h1>
-      <Form layout="vertical" style={{ maxWidth: '400px', margin: '0 auto' }}>
+      <Form layout="vertical" className="setup-form">
         <Form.Item label="Total Players (you + bots)">
           <InputNumber 
             min={1} 
@@ -106,7 +106,7 @@ const SinglePlayerApp: React.FC = () => {
         </Form.Item>
         
         <Form.Item label="Number of Bots">
-          <div style={{ padding: '8px 0', color: '#666' }}>
+          <div className="setup-help">
             {numBots <= 0 ? 
               "You will play alone (single-player mode)" : 
               `${numBots} ${numBots === 1 ? 'bot' : 'bots'} will play with you`
@@ -119,7 +119,7 @@ const SinglePlayerApp: React.FC = () => {
             <span>
               Use Custom Seed 
               <Tooltip title="Using a custom seed allows you to replay the same game configuration. Games with the same seed and player count will have the same card distribution.">
-                <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+                <QuestionCircleOutlined className="help-icon" />
               </Tooltip>
             </span>
           }
@@ -137,10 +137,10 @@ const SinglePlayerApp: React.FC = () => {
               max={9999999} 
               value={customSeed} 
               onChange={(value) => setCustomSeed(value as number)} 
-              style={{ width: '100%' }}
+              className="full-width-control"
               placeholder="Enter a number to use as seed"
             />
-            <div style={{ padding: '8px 0', color: '#666', fontSize: '0.9em' }}>
+            <div className="setup-help setup-help-small">
               Share this seed with friends to compare your performance on the same game!
             </div>
           </Form.Item>

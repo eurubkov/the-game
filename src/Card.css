@@ -1,56 +1,41 @@
 .card {
     width: 5rem;
     height: 7rem;
-    border-radius: var(--border-radius-md);
+    border-radius: var(--border-radius-lg);
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    color: white;
+    color: var(--text-light);
     margin: var(--spacing-xs);
-    box-shadow: var(--shadow-md);
-    transition: all 0.2s ease;
+    background: #40566f;
+    border: 1px solid rgba(35, 32, 29, 0.18);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
     user-select: none;
+    touch-action: manipulation;
     overflow: hidden;
 }
 
 .card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%);
-    z-index: 1;
+    inset: 0;
+    border: 3px solid rgba(255, 253, 248, 0.2);
     border-radius: inherit;
-}
-
-.card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-    z-index: 1;
-    border-radius: inherit;
+    pointer-events: none;
 }
 
 .card-corners {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     z-index: 2;
 }
 
 .card-corner {
     position: absolute;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.95rem;
+    font-weight: 700;
     padding: var(--spacing-xs);
 }
 
@@ -74,19 +59,36 @@
 
 .card-value {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .draggable {
-    transform: translateY(0);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid var(--success-color);
+    cursor: grab;
+}
+
+.draggable:hover,
+.playable-card {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(194, 138, 44, 0.22), var(--shadow-md);
+}
+
+.selectable-card {
+    cursor: pointer;
+}
+
+.selected-card {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(194, 138, 44, 0.34), var(--shadow-lg);
+    transform: translateY(-6px);
+}
+
+.card:focus-visible {
+    outline: 3px solid rgba(194, 138, 44, 0.55);
+    outline-offset: 3px;
 }
 
 .draggable:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-    cursor: grab;
+    transform: translateY(-4px);
 }
 
 .draggable:active {
@@ -95,24 +97,36 @@
 }
 
 .dragging {
-    opacity: 0.8;
-    transform: scale(1.05) translateY(-10px) !important;
-    box-shadow: var(--shadow-xl) !important;
+    opacity: 0.88;
+    transform: translateY(-8px) !important;
+    box-shadow: var(--shadow-lg) !important;
     z-index: 1000;
     cursor: grabbing !important;
 }
 
 .pile {
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-width: 2px;
+}
+
+.pile-up {
+    background: var(--card-color-1);
+}
+
+.pile-down {
+    background: var(--card-color-2);
+}
+
+.special-card {
+    background: var(--neutral-color);
 }
 
 .pile-indicator {
     position: absolute;
     top: 50%;
-    right: 5px;
+    right: 6px;
     transform: translateY(-50%);
-    font-size: 1.2rem;
-    opacity: 0.7;
+    font-size: 1.1rem;
+    opacity: 0.72;
     z-index: 2;
 }
 
@@ -122,50 +136,37 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.8rem;
-    opacity: 0.7;
+    opacity: 0.68;
     z-index: 2;
 }
 
-/* Animation for when a card is played */
-@keyframes cardPlayed {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.card-played {
-    animation: cardPlayed 0.5s ease;
-}
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .card {
         width: 4.5rem;
         height: 6.3rem;
+        margin: 0;
     }
     
     .card-value {
-        font-size: 1.8rem;
+        font-size: 1.75rem;
     }
 }
 
 @media (max-width: 480px) {
     .card {
-        width: 4rem;
-        height: 5.6rem;
+        width: 3.8rem;
+        height: 5.35rem;
     }
     
     .card-value {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
     
     .card-corner {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+    }
+
+    .drag-indicator {
+        display: none;
     }
 }

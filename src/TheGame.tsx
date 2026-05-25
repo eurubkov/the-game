@@ -1,5 +1,5 @@
 import { Game } from 'boardgame.io';
-import { INVALID_MOVE, PlayerView } from 'boardgame.io/core';
+import { INVALID_MOVE } from 'boardgame.io/core';
 
 interface Move {
   move: string;
@@ -83,21 +83,20 @@ export const CanPlayCard = (G, ctx, card, pile) => {
 }
 
 export const MinRequiredMoves = (G, ctx) => {
-  // In single-player mode, require only 1 move when the deck has cards
-  // In multiplayer mode, require 2 moves when the deck has cards
   if (!ctx.numPlayers) {
     throw Error("Should have at least one player");
   }
-  if (ctx.numPlayers === 1) {
-    return 1; // Single player always only needs to make 1 move
-  }
-  return G.deck.length > 0 ? 2 : 1; // Multiplayer: 2 moves when deck has cards, 1 when empty
+  return G.deck.length > 0 ? 2 : 1;
 }
 
 const HasValidMoves = (G, ctx, player) => {
+  if (player.hand.length === 0) {
+    return G.deck.length === 0;
+  }
+
   const piles = Object.keys(PILES_MAP);
   for (const pile of piles) {
-    if (player.hand.length === 0 || player.hand.some(card => CanPlayCard(G, ctx, card, pile))) {
+    if (player.hand.some(card => CanPlayCard(G, ctx, card, pile))) {
       return true;
     }
   }
@@ -127,12 +126,41 @@ const determineStartingPlayer = (G, ctx) => {
 }
 
 const EndTurn = (G, ctx) => {
-  // Check if the player has made the minimum required moves
+  const player = G.players[ctx.currentPlayer];
   const minRequiredMoves = MinRequiredMoves(G, ctx);
-  if (G.players[ctx.currentPlayer].hand.lengh > 0 && G.turnMovesMade < minRequiredMoves) {
+
+  if (player.hand.length === 0 && G.deck.length === 0) {
+    ctx.events?.endTurn();
+    return;
+  }
+
+  if ((G.turnMovesMade || 0) < minRequiredMoves) {
     return INVALID_MOVE;
   }
+
   ctx.events?.endTurn();
+}
+
+const RedactedPlayerView = (G, ctx, playerID) => {
+  if (playerID === "observer") {
+    return G;
+  }
+
+  const players = Object.keys(G.players).reduce((result, id) => {
+    const player = G.players[id];
+    result[id] = id === playerID
+      ? player
+      : {
+          ...player,
+          hand: player.hand.map(() => null)
+        };
+    return result;
+  }, {} as Record<string, any>);
+
+  return {
+    ...G,
+    players
+  };
 }
 
 // Use type assertion for the entire game object to handle type mismatches with boardgame.io
@@ -140,7 +168,7 @@ const TheGame = {
   name: "TheGame",
   minPlayers: 1,
   maxPlayers: 5,
-  playerView: PlayerView.STRIP_SECRETS,
+  playerView: RedactedPlayerView,
   setup: (ctx) => {
     // Generate a random seed if one isn't provided through game config
     // This will be a number between 1 and 1,000,000
@@ -174,9 +202,13 @@ const TheGame = {
   },
 
   ai: {
-    enumerate: (G, ctx) => {
+    enumerate: (G, ctx, playerID = ctx.currentPlayer) => {
       const moves: Move[] = [];
-      const player = G.players[ctx.currentPlayer];
+      const player = G.players[playerID];
+
+      if (!player) {
+        return moves;
+      }
       
       // 1. Every PlayCard with simple scoring
       for (const card of player.hand) {
@@ -278,6 +310,10 @@ const TheGame = {
       if (!G || !ctx.currentPlayer || !G.players || !G.players[ctx.currentPlayer]) {
         return null;
       }
+
+      if (ctx.phase !== "playCard") {
+        return null;
+      }
       
       const minRequiredMoves = MinRequiredMoves(G, ctx);
       const movesMade = G.turnMovesMade || 0;
@@ -327,6 +363,8 @@ const TheGame = {
       turn: {
         onBegin: (G, ctx) => {
           const startingPlayerID = determineStartingPlayer(G, ctx);
+          // The physical game lets players choose who starts; this app keeps a
+          // deterministic helper that starts the player with the most urgent hand.
           // Store the selected player ID in the game state
           G.startingPlayerID = startingPlayerID;
           ctx.events?.endTurn({ next: startingPlayerID });
@@ -344,7 +382,6 @@ const TheGame = {
       },
       turn: {
         minMoves: 0,
-        maxMoves: 7,
         onEnd: (G, ctx) => {
           Replenish(G, ctx);
         },

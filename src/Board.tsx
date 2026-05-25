@@ -3,7 +3,7 @@ import { MinRequiredMoves, CanPlayCard } from "./TheGame";
 import Card from "./Card";
 import GameOver from "./GameOver";
 import { Button } from 'antd';
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 /**
  * Type definitions for the game state and props
@@ -35,6 +35,7 @@ interface GameContext {
 
 interface GameMoves {
     PlayCard: (card: number, pile: string) => void;
+    EndTurn: () => void;
 }
 
 interface GameEvents {
@@ -76,15 +77,75 @@ const PILE_TYPE_MAP: Record<number, PileType> = {
     3: "down"
 };
 
-const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerID, ...props }) => {
+const EMPTY_HAND: number[] = [];
+
+const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, playerID, ...props }) => {
     const [showInvalidMove, setShowInvalidMove] = useState(false);
-    const currentPlayerName = props.matchData[ctx.currentPlayer].name;
+    const [draggedCard, setDraggedCard] = useState<number | null>(null);
+    const [selectedCard, setSelectedCard] = useState<number | null>(null);
+    const currentPlayerName = props.matchData[ctx.currentPlayer]?.name || `Player ${Number(ctx.currentPlayer) + 1}`;
     // In observer mode, we're not a player
     const isObserver = playerID === "observer";
     const isCurrentPlayer = !isObserver && ctx.currentPlayer === playerID;
+    const handPlayerID = isObserver ? ctx.currentPlayer : playerID;
+    const visibleHand = useMemo(
+        () => G.players[handPlayerID]?.hand || EMPTY_HAND,
+        [G.players, handPlayerID]
+    );
+    const currentPlayerHand = G.players[ctx.currentPlayer]?.hand || [];
+    const minRequiredMoves = MinRequiredMoves(G, ctx);
+    const cardsStillRequired = Math.max(minRequiredMoves - (G.turnMovesMade || 0), 0);
+    const activeCard = draggedCard ?? selectedCard;
+
+    useEffect(() => {
+        setDraggedCard(null);
+        setSelectedCard(null);
+    }, [ctx.currentPlayer, playerID]);
+
+    useEffect(() => {
+        if (selectedCard !== null && !visibleHand.includes(selectedCard)) {
+            setSelectedCard(null);
+        }
+    }, [selectedCard, visibleHand]);
+
+    const showInvalidMoveToast = () => {
+        setShowInvalidMove(true);
+        setTimeout(() => setShowInvalidMove(false), 2000);
+    };
     
     const onEndTurn = () => {
-        events.endTurn();
+        setSelectedCard(null);
+        moves.EndTurn();
+    };
+
+    const canEndTurn = currentPlayerHand.length === 0 && G.deck.length === 0
+        ? true
+        : (G.turnMovesMade || 0) >= minRequiredMoves;
+
+    const canPlayOnAnyPile = (card: number) => (
+        Object.values(INDEX_TO_PILE_MAP).some(pile => CanPlayCard(G, ctx, card, pile))
+    );
+
+    const playCardOnPile = (card: number, pile: string) => {
+        if (!isCurrentPlayer || !CanPlayCard(G, ctx, card, pile)) {
+            showInvalidMoveToast();
+            return;
+        }
+
+        moves.PlayCard(card, pile);
+        setDraggedCard(null);
+        setSelectedCard(null);
+    };
+
+    const onCardTap = (card: number) => {
+        if (!isCurrentPlayer) return;
+
+        if (!canPlayOnAnyPile(card)) {
+            showInvalidMoveToast();
+            return;
+        }
+
+        setSelectedCard(previousCard => previousCard === card ? null : card);
     };
     
     /**
@@ -99,8 +160,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
         
         if (isNaN(card)) {
             console.error('Invalid card value:', cardValue);
-            setShowInvalidMove(true);
-            setTimeout(() => setShowInvalidMove(false), 2000);
+            showInvalidMoveToast();
             return;
         }
         
@@ -108,14 +168,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
         const pile = INDEX_TO_PILE_MAP[pileIndex];
         
         // Check if the move is valid according to game rules
-        const isValidMove = CanPlayCard(G, ctx, card, pile);
-        
-        if (!isValidMove) {
-            setShowInvalidMove(true);
-            setTimeout(() => setShowInvalidMove(false), 2000);
-        } else {
-            moves.PlayCard(card, pile);
-        }
+        playCardOnPile(card, pile);
     };
 
     /**
@@ -128,13 +181,41 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
     /**
      * Create a pile element with the appropriate styling and drop target
      */
-    const createPileElement = (index: number, value: number, pileType: PileType) => (
+    const createPileElement = (index: number, value: number, pileType: PileType) => {
+        const pile = INDEX_TO_PILE_MAP[index];
+        const isValidDropTarget = activeCard !== null && CanPlayCard(G, ctx, activeCard, pile);
+        const dropClassName = [
+            "drop-target",
+            activeCard !== null ? "drop-target-active" : "",
+            isValidDropTarget ? "valid-drop-target" : ""
+        ].filter(Boolean).join(" ");
+        const pileLetter = index % 2 === 0 ? 'A' : 'B';
+        const pileDirection = pileType === 'up' ? 'Ascending' : 'Descending';
+        const onPileTap = () => {
+            if (selectedCard === null) return;
+            playCardOnPile(selectedCard, pile);
+        };
+        const onPileKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (selectedCard !== null && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                onPileTap();
+            }
+        };
+
+        return (
         <div key={index} className="pile-column">
             <div className="pile-label">
-                {pileType === 'up' ? 'ASCENDING' : 'DESCENDING'}
+                <span className="pile-label-icon">{pileType === 'up' ? '↑' : '↓'}</span>
+                <span>Pile {pileLetter}</span>
             </div>
             <div 
-                className="drop-target"
+                className={dropClassName}
+                role="button"
+                tabIndex={selectedCard !== null ? 0 : -1}
+                aria-disabled={!isCurrentPlayer || selectedCard === null}
+                aria-label={`${pileDirection} pile ${pileLetter}, current value ${value}`}
+                onClick={onPileTap}
+                onKeyDown={onPileKeyDown}
                 onDrop={(e) => onDragDrop(e, index)}
                 onDragOver={handleDragOver}
             >
@@ -146,7 +227,8 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                 />
             </div>
         </div>
-    );
+        );
+    };
     
     /**
      * Render the game piles using modern array methods
@@ -169,8 +251,26 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
         
         return (
             <div className="piles-container">
-                {upPiles}
-                {downPiles}
+                <section className="pile-group up-group" aria-label="Ascending piles">
+                    <div className="pile-group-heading">
+                        <span className="pile-group-icon">↑</span>
+                        <div>
+                            <h2>Ascending</h2>
+                            <p>Play higher, or exactly 10 less</p>
+                        </div>
+                    </div>
+                    <div className="pile-row">{upPiles}</div>
+                </section>
+                <section className="pile-group down-group" aria-label="Descending piles">
+                    <div className="pile-group-heading">
+                        <span className="pile-group-icon">↓</span>
+                        <div>
+                            <h2>Descending</h2>
+                            <p>Play lower, or exactly 10 more</p>
+                        </div>
+                    </div>
+                    <div className="pile-row">{downPiles}</div>
+                </section>
             </div>
         );
     };
@@ -179,8 +279,6 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
      * Render player's hand with draggable cards using modern array methods
      */
     const renderHand = () => {
-        // If we're in observer mode, show the current player's hand
-        const handPlayerID = isObserver ? ctx.currentPlayer : playerID;
         const isDraggable = isCurrentPlayer;
         
         // Check if the player exists and has a hand
@@ -192,17 +290,26 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
             );
         }
         
-        const playerHand = G.players[handPlayerID].hand;
-        
-        const handCards = playerHand.map((handValue, index) => (
-            <div key={index} className="card-wrapper">
-                <Card 
-                    id={handValue} 
-                    value={handValue} 
-                    isDraggable={isDraggable}
-                />
-            </div>
-        ));
+        const handCards = visibleHand.map((handValue, index) => {
+            const isPlayableCard = isDraggable && canPlayOnAnyPile(handValue);
+
+            return (
+                <div key={index} className="card-wrapper">
+                    <Card
+                        id={handValue}
+                        value={handValue}
+                        isDraggable={isDraggable}
+                        isPlayable={isPlayableCard}
+                        isSelectable={isPlayableCard}
+                        isSelected={selectedCard === handValue}
+                        aria-label={`Hand card ${handValue}`}
+                        onClick={isDraggable ? () => onCardTap(handValue) : undefined}
+                        onDragStartCard={() => setDraggedCard(handValue)}
+                        onDragEndCard={() => setDraggedCard(null)}
+                    />
+                </div>
+            );
+        });
         
         return (
             <div className="cards-container">
@@ -217,12 +324,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
     const renderHeader = () => (
         <div className="game-header">
             <h1 className="game-title">The Game</h1>
-            <div className="game-info">
-                <div className="deck-container">
-                    <div className="deck-label">Remaining Cards</div>
-                    <Card id="deck" value={G.deck.length} />
-                </div>
-            </div>
+            <div className="game-subtitle">Four piles. One shared deck. No wasted moves.</div>
         </div>
     );
     
@@ -238,6 +340,31 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
             )}
         </div>
     );
+
+    const renderStatusStrip = () => (
+        <div className="status-strip" aria-label="Game status">
+            <div className="status-item">
+                <span className="status-label">Turn</span>
+                <span className="status-value">{isCurrentPlayer ? 'You' : currentPlayerName}</span>
+            </div>
+            <div className="status-item">
+                <span className="status-label">Played</span>
+                <span className="status-value">{G.turnMovesMade || 0} / {minRequiredMoves}</span>
+            </div>
+            <div className="status-item">
+                <span className="status-label">Needed</span>
+                <span className="status-value">{cardsStillRequired}</span>
+            </div>
+            <div className="status-item">
+                <span className="status-label">Deck</span>
+                <span className="status-value">{G.deck.length}</span>
+            </div>
+            <div className="status-item">
+                <span className="status-label">Hand</span>
+                <span className="status-value">{visibleHand.length}</span>
+            </div>
+        </div>
+    );
     
     /**
      * Render the action buttons
@@ -250,7 +377,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                 <Button 
                     className="primary-button"
                     type="primary" 
-                    disabled={(G.players[ctx.currentPlayer] && G.players[ctx.currentPlayer].hand.length > 0 && G.turnMovesMade < MinRequiredMoves(G, ctx)) || !isCurrentPlayer} 
+                    disabled={!canEndTurn || !isCurrentPlayer}
                     onClick={onEndTurn}
                 >
                     End Turn
@@ -280,9 +407,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                         <li>On ascending piles (starting at 1), play higher numbers or exactly 10 less</li>
                         <li>On descending piles (starting at 100), play lower numbers or exactly 10 more</li>
                         <li>
-                            {ctx.numPlayers === 1 
-                                ? "In single-player mode, you must play at least 1 card per turn" 
-                                : "In multiplayer mode, you must play at least 2 cards per turn (1 if the deck is empty)"}
+                            You must play at least 2 cards while the deck has cards, then at least 1 card once the deck is empty
                         </li>
                         <li>The goal is to play all cards from the deck and your hands</li>
                     </ul>
@@ -294,8 +419,10 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
     return (
         <div className={`game-container ${isCurrentPlayer ? 'your-turn' : ''}`}>
             {renderHeader()}
-            {renderPiles()}
             {renderTurnIndicator()}
+            {renderStatusStrip()}
+            {renderActionButtons()}
+            {renderPiles()}
             
             {showInvalidMove && (
                 <div className="invalid-move-alert">
@@ -307,7 +434,7 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                 <h3 className="hand-label">
                     {isObserver 
                         ? `${props.matchData[ctx.currentPlayer].name}'s Hand` 
-                        : "Your Hand"}
+                        : selectedCard !== null ? `Your Hand: ${selectedCard} selected` : "Your Hand"}
                 </h3>
                 {renderHand()}
             </div>
@@ -353,7 +480,6 @@ const TheGameBoard: React.FC<GameBoardProps> = ({ ctx, G, moves, events, playerI
                     );
                 }
             })()}
-            {renderActionButtons()}
             {renderGameRules()}
         </div>
     );

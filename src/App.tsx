@@ -49,7 +49,6 @@ const App = () => {
                             type="primary" 
                             size="large"
                             onClick={() => setGameMode(GameMode.SINGLE_PLAYER)}
-                            style={{ margin: '10px' }}
                         >
                             Single Player
                         </Button>
@@ -57,7 +56,6 @@ const App = () => {
                             type="primary" 
                             size="large"
                             onClick={() => setGameMode(GameMode.MULTIPLAYER)}
-                            style={{ margin: '10px' }}
                         >
                             Multiplayer
                         </Button>
@@ -65,7 +63,6 @@ const App = () => {
                             type="primary" 
                             size="large"
                             onClick={() => setGameMode(GameMode.BOT_TEST)}
-                            style={{ margin: '10px' }}
                         >
                             Bot Test Mode
                         </Button>
@@ -73,7 +70,6 @@ const App = () => {
                             type="default" 
                             size="large"
                             onClick={() => setGameMode(GameMode.LEADERBOARD)}
-                            style={{ margin: '10px' }}
                         >
                             Leaderboard
                         </Button>
@@ -89,7 +85,7 @@ const App = () => {
             <div className="App">
                 <Button 
                     onClick={() => setGameMode(GameMode.SELECTION)} 
-                    style={{ margin: '10px' }}
+                    className="back-button"
                 >
                     Back to Mode Selection
                 </Button>
@@ -104,7 +100,7 @@ const App = () => {
             <div className="App">
                 <Button 
                     onClick={() => setGameMode(GameMode.SELECTION)} 
-                    style={{ margin: '10px' }}
+                    className="back-button"
                 >
                     Back to Mode Selection
                 </Button>
@@ -119,7 +115,7 @@ const App = () => {
             <div className="App">
                 <Button 
                     onClick={() => setGameMode(GameMode.SELECTION)} 
-                    style={{ margin: '10px' }}
+                    className="back-button"
                 >
                     Back to Mode Selection
                 </Button>
@@ -133,7 +129,7 @@ const App = () => {
         <div className="App">
             <Button 
                 onClick={() => setGameMode(GameMode.SELECTION)} 
-                style={{ margin: '10px' }}
+                className="back-button"
             >
                 Back to Mode Selection
             </Button>
